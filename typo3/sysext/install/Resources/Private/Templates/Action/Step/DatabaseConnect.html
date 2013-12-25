@@ -18,10 +18,21 @@
 			</f:if>
 			<f:render partial="Action/Step/DatabaseConnect/UnloadDbal" arguments="{_all}" />
 		</f:then>
-
 		<f:else>
-			<f:render partial="Action/Step/DatabaseConnect/ConnectDetails" arguments="{_all}" />
-			<f:render partial="Action/Step/DatabaseConnect/LoadDbal" arguments="{_all}" />
+			<f:if condition="{isDoctrineEnabled}">
+				<f:then>
+						<f:render partial="Action/Step/DatabaseConnect/DoctrineDriverSelection" arguments="{_all}" />
+						<f:if condition="{selectedDoctrineDriver}">
+							<f:render partial="Action/Step/DatabaseConnect/ConnectDetails" arguments="{_all}" />
+						</f:if>
+						<f:render partial="Action/Step/DatabaseConnect/UnloadDoctrine" arguments="{_all}" />
+					</f:then>
+					<f:else>
+						<f:render partial="Action/Step/DatabaseConnect/ConnectDetails" arguments="{_all}" />
+						<f:render partial="Action/Step/DatabaseConnect/LoadDbal" arguments="{_all}" />
+						<f:render partial="Action/Step/DatabaseConnect/LoadDoctrine" arguments="{_all}" />
+				</f:else>
+            </f:if>
 		</f:else>
 	</f:if>
 </f:section>

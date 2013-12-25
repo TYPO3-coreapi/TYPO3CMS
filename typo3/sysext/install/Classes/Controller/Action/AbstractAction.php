@@ -190,6 +190,19 @@ abstract class AbstractAction {
 	}
 
 	/**
+	 * Return TRUE if dbal and adodb extension is loaded
+	 *
+	 * @return boolean TRUE if dbal and adodb is loaded
+	 */
+	protected function isDoctrineEnabled() {
+		if (\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::isLoaded('doctrine_dbal')) {
+			return TRUE;
+		}
+
+		return FALSE;
+	}
+
+	/**
 	 * Context determines if the install tool is called within backend or standalone
 	 *
 	 * @return string Either 'standalone' or 'backend'

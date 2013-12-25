@@ -32,12 +32,14 @@ use TYPO3\CMS\Install\Controller\Action;
  * - Renders fields for database connection fields
  * - Sets database credentials in LocalConfiguration
  * - Loads / unloads ext:dbal and ext:adodb if requested
+ * - Loads / unloads ext:doctrine_dbal if requested Note: Added the comment for Doctrine
  */
 class DatabaseConnect extends Action\AbstractAction implements StepInterface {
 
 	/**
 	 * Execute database step:
 	 * - Load / unload dbal & adodb
+	 * - Load / unload ext:doctrine_dbal Note: We load Doctrine here to.
 	 * - Set database connect credentials in LocalConfiguration
 	 *
 	 * @return array<\TYPO3\CMS\Install\Status\StatusInterface>
@@ -54,6 +56,10 @@ class DatabaseConnect extends Action\AbstractAction implements StepInterface {
 			$result[] = $this->executeLoadDbalExtension();
 		} elseif ($postValues['unloadDbal']) {
 			$result[] = $this->executeUnloadDbalExtension();
+		} elseif ($postValues['loadDoctrine']) {
+			$result[] = $this->executeLoadDoctrineExtension();
+		} elseif ($postValues['unloadDoctrine']) {
+			$result[] = $this->executeUnloadDoctrineExtension();
 		} elseif ($postValues['setDbalDriver']) {
 			$driver = $postValues['setDbalDriver'];
 			switch ($driver) {
@@ -228,26 +234,35 @@ class DatabaseConnect extends Action\AbstractAction implements StepInterface {
 		$this->initializeHandle();
 
 		$isDbalEnabled = $this->isDbalEnabled();
+		$isDoctrineEnabled = $this->isDoctrineEnabled();
 		$this->view
 			->assign('isDbalEnabled', $isDbalEnabled)
+			->assign('isDoctrineEnabled', $isDoctrineEnabled)
 			->assign('username', $this->getConfiguredUsername())
 			->assign('password', $this->getConfiguredPassword())
 			->assign('host', $this->getConfiguredHost())
 			->assign('port', $this->getConfiguredOrDefaultPort())
 			->assign('database', $GLOBALS['TYPO3_CONF_VARS']['DB']['database'] ?: '')
-			->assign('socket', $GLOBALS['TYPO3_CONF_VARS']['DB']['socket'] ?: '');
+			->assign('socket', $GLOBALS['TYPO3_CONF_VARS']['DB']['socket'] ?: '')
+			->assign('charset', $this->getConfiguredCharset());
 
 		if ($isDbalEnabled) {
 			$this->view->assign('selectedDbalDriver', $this->getSelectedDbalDriver());
 			$this->view->assign('dbalDrivers', $this->getAvailableDbalDrivers());
 			$this->setDbalInputFieldsToRender();
-		} else {
+		} elseif ($isDoctrineEnabled) {
+			$this->view->assign('selectedDoctrineDriver', $this->getSelectedDoctrineDriver());
+			$this->view->assign('doctrineDrivers', $this->getAvailableDoctrineDrivers());
+			$this->setDoctrineInputFieldsToRender();
+		}
+		else {
 			$this->view
 				->assign('renderConnectDetailsUsername', TRUE)
 				->assign('renderConnectDetailsPassword', TRUE)
 				->assign('renderConnectDetailsHost', TRUE)
 				->assign('renderConnectDetailsPort', TRUE)
-				->assign('renderConnectDetailsSocket', TRUE);
+				->assign('renderConnectDetailsSocket', TRUE)
+				->assign('renderConnectDetailsCharset', TRUE);
 		}
 
 		return $this->view->render();
@@ -269,6 +284,24 @@ class DatabaseConnect extends Action\AbstractAction implements StepInterface {
 						break;
 					case 'mssql':
 					case 'odbc_mssql':
+						$port = 1433;
+						break;
+					case 'oci8':
+						$port = 1521;
+						break;
+					default:
+						$port = 3306;
+				}
+			} elseif ($this->isDoctrineEnabled()) {
+				$driver = $this->getSelectedDoctrineDriver();
+				switch ($driver) {
+					case 'pdo_mysql':
+						$port = 3306;
+						break;
+					case 'pdo_pgsql':
+						$port = 5432;
+						break;
+					case 'pdo_sqlsrv':
 						$port = 1433;
 						break;
 					case 'oci8':
@@ -303,11 +336,23 @@ class DatabaseConnect extends Action\AbstractAction implements StepInterface {
 			}
 		}
 
+		if ($this->isDoctrineEnabled()) {
+			// Set additional connect information based on dbal driver. postgres for example needs
+			// database name already for connect.
+			if (isset($GLOBALS['TYPO3_CONF_VARS']['DB']['database'])) {
+				$databaseConnection->setDatabaseName($GLOBALS['TYPO3_CONF_VARS']['DB']['database']);
+			}
+			if (isset($GLOBALS['TYPO3_CONF_VARS']['DB']['driver'])) {
+				$databaseConnection->setDatabaseDriver($GLOBALS['TYPO3_CONF_VARS']['DB']['driver']);
+			}
+		}
+
 		$databaseConnection->setDatabaseUsername($this->getConfiguredUsername());
 		$databaseConnection->setDatabasePassword($this->getConfiguredPassword());
 		$databaseConnection->setDatabaseHost($this->getConfiguredHost());
 		$databaseConnection->setDatabasePort($this->getConfiguredPort());
 		$databaseConnection->setDatabaseSocket($this->getConfiguredSocket());
+		$databaseConnection->setDatabaseCharset($this->getConfiguredCharset());
 
 		$result = FALSE;
 		if (@$databaseConnection->sql_pconnect()) {
@@ -475,6 +520,64 @@ class DatabaseConnect extends Action\AbstractAction implements StepInterface {
 	}
 
 	/**
+	 * Render fields required for successful connect based on dbal driver selection.
+	 * Hint: There is a code duplication in handle() and this method. This
+	 * is done by intention to keep this code area easy to maintain and understand.
+	 *
+	 * @see http://docs.doctrine-project.org/projects/doctrine-dbal/en/latest/reference/configuration.html
+	 * @return void
+	 */
+	protected function setDoctrineInputFieldsToRender() {
+		// TODO: Alter here the fields which are needed for the drivers
+		$driver = $this->getSelectedDoctrineDriver();
+		switch($driver) {
+			case 'pdo_mysql':
+				$this->view
+					->assign('renderConnectDetailsUsername', TRUE)
+					->assign('renderConnectDetailsPassword', TRUE)
+					->assign('renderConnectDetailsHost', TRUE)
+					->assign('renderConnectDetailsSocket', TRUE)
+					->assign('renderConnectDetailsPort', TRUE)
+					->assign('renderConnectDetailsDatabase', TRUE)
+					->assign('renderConnectDetailsCharset', TRUE);
+				break;
+			case 'pdo_sqlite':
+				$this->view
+					->assign('renderConnectDetailsUsername', TRUE)
+					->assign('renderConnectDetailsPassword', TRUE)
+					->assign('renderConnectDetailsPath', TRUE)
+					->assign('renderConnectDetailsMemory', TRUE);
+				break;
+			case 'pdo_pgsql':
+				$this->view
+					->assign('renderConnectDetailsUsername', TRUE)
+					->assign('renderConnectDetailsPassword', TRUE)
+					->assign('renderConnectDetailsHost', TRUE)
+					->assign('renderConnectDetailsPort', TRUE)
+					->assign('renderConnectDetailsDatabase', TRUE);
+				break;
+			case 'oci8':
+				$this->view
+					->assign('renderConnectDetailsUsername', TRUE)
+					->assign('renderConnectDetailsPassword', TRUE)
+					->assign('renderConnectDetailsHost', TRUE)
+					->assign('renderConnectDetailsPort', TRUE)
+					->assign('renderConnectDetailsDatabase', TRUE)
+					->assign('renderConnectDetailsCharset', TRUE);
+				break;
+			case 'pdo_sqlsrv':
+				$this->view
+					->assign('renderConnectDetailsUsername', TRUE)
+					->assign('renderConnectDetailsPassword', TRUE)
+					->assign('renderConnectDetailsHost', TRUE)
+					->assign('renderConnectDetailsPort', TRUE)
+					->assign('renderConnectDetailsDatabase', TRUE);
+				break;
+			default:
+		}
+	}
+
+	/**
 	 * Returns a list of database drivers that are available on current server.
 	 *
 	 * @return array
@@ -516,6 +619,47 @@ class DatabaseConnect extends Action\AbstractAction implements StepInterface {
 	}
 
 	/**
+	 * Returns a list of database drivers that are available on current server.
+	 *
+	 * @return array
+	 */
+	protected function getAvailableDoctrineDrivers() {
+		$supportedDrivers = $this->getSupportedDoctrineDrivers();
+		$availableDrivers = array();
+		$selectedDoctrineDriver = $this->getSelectedDoctrineDriver();
+		foreach ($supportedDrivers as $abstractionLayer => $drivers) {
+			foreach ($drivers as $driver => $info) {
+				if (isset($info['combine']) && $info['combine'] === 'OR') {
+					$isAvailable = FALSE;
+				} else {
+					$isAvailable = TRUE;
+				}
+				// Loop through each PHP module dependency to ensure it is loaded
+				foreach ($info['extensions'] as $extension) {
+					if (isset($info['combine']) && $info['combine'] === 'OR') {
+						$isAvailable |= extension_loaded($extension);
+					} else {
+						$isAvailable &= extension_loaded($extension);
+					}
+				}
+				if ($isAvailable) {
+					if (!isset($availableDrivers[$abstractionLayer])) {
+						$availableDrivers[$abstractionLayer] = array();
+					}
+					$availableDrivers[$abstractionLayer][$driver] = array();
+					$availableDrivers[$abstractionLayer][$driver]['driver'] = $driver;
+					$availableDrivers[$abstractionLayer][$driver]['label'] = $info['label'];
+					$availableDrivers[$abstractionLayer][$driver]['selected'] = FALSE;
+					if ($selectedDoctrineDriver === $driver) {
+						$availableDrivers[$abstractionLayer][$driver]['selected'] = TRUE;
+					}
+				}
+			}
+		}
+		return $availableDrivers;
+	}
+
+	/**
 	 * Returns a list of DBAL supported database drivers, with a
 	 * user-friendly name and any PHP module dependency.
 	 *
@@ -548,8 +692,42 @@ class DatabaseConnect extends Action\AbstractAction implements StepInterface {
 	}
 
 	/**
-	 * Get selected dbal driver if any
+	 * Returns a list of Doctrine DBAL supported database drivers, with a
+	 * user-friendly name and any PHP module dependency.
 	 *
+	 * @return array
+	 */
+	protected function getSupportedDoctrineDrivers() {
+		$supportedDrivers = array(
+			'Native' => array(
+				'pdo_mysql' => array(
+					'label' => 'MySQL PDO driver',
+					'extensions' => array('pdo_mysql')
+				),
+				'pdo_sqlite' => array(
+					'label' => 'SQLite PDO driver',
+					'extensions' => array('pdo_sqlite')
+				),
+				'pdo_pgsql' => array(
+					'label' => 'PostgreSQL PDO driver',
+					'extensions' => array('pdo_pgsql')
+				),
+				'sqlsrv' => array(
+					'label' => 'Microsoft SQL Server PDO driver',
+					'extensions' => array('pdo_sqlsrv')
+				),
+				'oci8' => array(
+					'label' => 'Oracle OCI8 PDO driver',
+					'extensions' => array('oci8')
+				)
+			)
+		);
+
+		return $supportedDrivers;
+	}
+
+	/**
+	 * Get selected dbal driver if any
 	 * @return string Dbal driver or empty string if not yet selected
 	 */
 	protected function getSelectedDbalDriver() {
@@ -558,6 +736,23 @@ class DatabaseConnect extends Action\AbstractAction implements StepInterface {
 		}
 		return '';
 	}
+
+	/**
+	 * Get selected dbal driver if any
+	 * TODO: Add stuff for Doctrine here
+	 * @return string Dbal driver or empty string if not yet selected
+	 */
+	protected function getSelectedDoctrineDriver() {
+		$result = 'pdo_mysql';
+
+		if (isset($GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['doctrine']['handlerCfg']['_DEFAULT']['config']['driver'])) {
+			$result = $GLOBALS['TYPO3_CONF_VARS']['EXTCONF']['doctrine']['handlerCfg']['_DEFAULT']['config']['driver'];
+		}
+
+		return $result;
+	}
+
+
 
 	/**
 	 * Adds dbal and adodb to list of loaded extensions
@@ -579,7 +774,6 @@ class DatabaseConnect extends Action\AbstractAction implements StepInterface {
 
 	/**
 	 * Remove dbal and adodb from list of loaded extensions
-	 *
 	 * @return \TYPO3\CMS\Install\Status\StatusInterface
 	 */
 	protected function executeUnloadDbalExtension() {
@@ -593,6 +787,36 @@ class DatabaseConnect extends Action\AbstractAction implements StepInterface {
 		/** @var $errorStatus \TYPO3\CMS\Install\Status\WarningStatus */
 		$warningStatus = $this->objectManager->get('TYPO3\\CMS\\Install\\Status\\WarningStatus');
 		$warningStatus->setTitle('Removed database abstraction layer');
+		return $warningStatus;
+	}
+
+	/**
+	 * Adds Doctrine DBAL to list of loaded extensions
+	 * @return \TYPO3\CMS\Install\Status\StatusInterface
+	 */
+	protected function executeLoadDoctrineExtension() {
+		if (!\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::isLoaded('doctrine_dbal')) {
+			\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::loadExtension('doctrine_dbal');
+		}
+		/** @var $errorStatus \TYPO3\CMS\Install\Status\WarningStatus */
+		$warningStatus = $this->objectManager->get('TYPO3\\CMS\\Install\\Status\\WarningStatus');
+		$warningStatus->setTitle('Loaded Doctrine DBAL');
+
+		return $warningStatus;
+	}
+
+	/**
+	 * Remove Doctrine DBAL from list of loaded extensions
+	 * @return \TYPO3\CMS\Install\Status\StatusInterface
+	 */
+	protected function executeUnloadDoctrineExtension() {
+		if (\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::isLoaded('doctrine_dbal')) {
+			\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::unloadExtension('doctrine_dbal');
+		}
+		// @TODO: Remove configuration from TYPO3_CONF_VARS['EXTCONF']['dbal']
+		/** @var $errorStatus \TYPO3\CMS\Install\Status\WarningStatus */
+		$warningStatus = $this->objectManager->get('TYPO3\\CMS\\Install\\Status\\WarningStatus');
+		$warningStatus->setTitle('Removed Doctrine DBAL');
 		return $warningStatus;
 	}
 
@@ -653,5 +877,16 @@ class DatabaseConnect extends Action\AbstractAction implements StepInterface {
 	protected function getConfiguredSocket() {
 		$socket = isset($GLOBALS['TYPO3_CONF_VARS']['DB']['socket']) ? $GLOBALS['TYPO3_CONF_VARS']['DB']['socket'] : '';
 		return $socket;
+	}
+
+	/**
+	 * Returns configured charset, if set
+	 *
+	 * @return string
+	 */
+	protected function getConfiguredCharset() {
+		$charset = isset($GLOBALS['TYPO3_CONF_VARS']['DB']['charset']) ? $GLOBALS['TYPO3_CONF_VARS']['DB']['charset'] : 'utf8';
+
+		return $charset;
 	}
 }

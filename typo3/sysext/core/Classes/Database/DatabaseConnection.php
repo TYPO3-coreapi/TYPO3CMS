@@ -1484,6 +1484,25 @@ class DatabaseConnection {
 	}
 
 	/**
+	 * Set default charset
+	 *
+	 * @param string $charset
+	 * @return void
+	 */
+	public function setDatabaseCharset($charset = 'utf8') {
+		$this->default_charset = $charset;
+	}
+
+	/**
+	 * Returns the default charset
+	 *
+	 * @return mixed
+	 */
+	public function getDatabaseCharset() {
+		return $this->default_charset;
+	}
+
+	/**
 	 * Set persistent database connection
 	 *
 	 * @param boolean $persistentDatabaseConnection
