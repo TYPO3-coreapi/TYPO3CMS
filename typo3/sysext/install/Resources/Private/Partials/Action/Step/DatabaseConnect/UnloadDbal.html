@@ -1,6 +1,7 @@
 <form method="post">
 	<f:render partial="Action/Common/HiddenFormFields" arguments="{_all}" />
 	<input type="hidden" value="execute" name="install[set]" />
+    <!-- TODO: Something to do to make Doctrine work?-->
 	<input type="hidden" value="1" name="install[values][unloadDbal]" />
 	<button type="submit">
 		I use native mysql
