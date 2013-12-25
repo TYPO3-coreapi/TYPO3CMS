@@ -53,6 +53,13 @@
 				</li>
 			</f:if>
 
+			<f:if condition="{renderConnectDetailsCharset}">
+				<li>
+					<label for="t3-install-step-charset">Charset</label>
+					<input id="t3-install-step-charset" class="t3-install-form-input-text" type="text" value="{charset}" name="install[values][charset]" />
+				</li>
+			</f:if>
+
 			<f:if condition="{renderConnectDetailsOracleSidConnect}">
 				<li>
 					<label for="t3-install-form-type">Oracle Sid</label>

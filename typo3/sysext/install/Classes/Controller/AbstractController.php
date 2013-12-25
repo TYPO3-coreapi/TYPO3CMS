@@ -398,8 +398,9 @@ class AbstractController {
 
 	/**
 	 * Require dbal ext_localconf if extension is loaded
+	 * Require Doctrine DBAL ext_localconf if extension is loaded
 	 * Required extbase + fluid ext_localconf
-	 * Set caching to null, we do not want dbal, fluid or extbase to cache anything
+	 * Set caching to null, we do not want doctrine, dbal, fluid or extbase to cache anything
 	 *
 	 * @return void
 	 */
@@ -407,6 +408,12 @@ class AbstractController {
 		if ($this->isDbalEnabled()) {
 			require(\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath('dbal') . 'ext_localconf.php');
 			$GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['dbal']['backend']
+				= 'TYPO3\\CMS\\Core\\Cache\\Backend\\NullBackend';
+		}
+
+		if ($this->isDoctrineEnabled()) {
+			require(\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath('doctrine_dbal') . 'ext_localconf.php');
+			$GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['doctrine_dbal']['backend']
 				= 'TYPO3\\CMS\\Core\\Cache\\Backend\\NullBackend';
 		}
 
@@ -440,6 +447,19 @@ class AbstractController {
 		) {
 			return TRUE;
 		}
+		return FALSE;
+	}
+
+	/**
+	 * Return TRUE if Doctrine DBAL extension is loaded.
+	 *
+	 * @return boolean TRUE if Doctrine DBAL is loaded
+	 */
+	protected function isDoctrineEnabled() {
+		if (\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::isLoaded('doctrine_dbal')) {
+			return TRUE;
+		}
+
 		return FALSE;
 	}
 
