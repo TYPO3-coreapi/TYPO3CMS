@@ -418,6 +418,12 @@ class AbstractController {
 				= 'TYPO3\\CMS\\Core\\Cache\\Backend\\NullBackend';
 		}
 
+		if ($this->isDoctrineEnabled()) {
+			require(\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath('doctrine_dbal') . 'ext_localconf.php');
+			$GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']['doctrine_dbal']['backend']
+				= 'TYPO3\\CMS\\Core\\Cache\\Backend\\NullBackend';
+		}
+
 		require(\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath('extbase') . 'ext_localconf.php');
 		require(\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath('fluid') . 'ext_localconf.php');
 
