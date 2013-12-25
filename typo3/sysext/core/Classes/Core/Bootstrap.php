@@ -275,7 +275,7 @@ class Bootstrap {
 	}
 
 	/**
-	 * Reinitializes the class loader during clear cache actions
+	 * Reinitialise the class loader during clear cache actions
 	 * Beware! This is not public API and necessary for edge cases in the install tool
 	 *
 	 * @param string $packageManagerClassName
