@@ -259,6 +259,10 @@ class Bootstrap {
 	 * @return Bootstrap
 	 */
 	protected function initializeClassLoader() {
+		/** Composer loader */
+		//require_once PATH_typo3 . '/contrib/composer/autoload_real.php';
+		require_once PATH_typo3conf . 'ext/doctrine_dbal/vendor/autoload.php';
+
 		$classLoader = new ClassLoader($this->applicationContext);
 		$this->setEarlyInstance('TYPO3\\CMS\\Core\\Core\\ClassLoader', $classLoader);
 		$classLoader->setRuntimeClassLoadingInformationFromAutoloadRegistry((array) include __DIR__ . '/../../ext_autoload.php');
