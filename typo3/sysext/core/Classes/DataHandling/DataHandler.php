@@ -5558,6 +5558,7 @@ class DataHandler {
 	 *
 	 * @param integer $id Page id
 	 * @param integer $perms Permission integer
+	 * TODO: Change to PDO
 	 * @return boolean|\mysqli_result|object MySQLi result object / DBAL object (from exec_SELECTquery())
 	 * @access private
 	 * @see doesRecordExist()

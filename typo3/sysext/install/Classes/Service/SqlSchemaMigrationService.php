@@ -479,6 +479,8 @@ class SqlSchemaMigrationService {
 	 *
 	 * @param array $row MySQL result row
 	 * @return string Field definition
+	 *
+	 * TODO: Adjust this method for doctrine
 	 */
 	public function assembleFieldDefinition($row) {
 		$field = array($row['Type']);

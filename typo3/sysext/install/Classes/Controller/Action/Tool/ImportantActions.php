@@ -311,6 +311,7 @@ class ImportantActions extends Action\AbstractAction implements Action\ActionInt
 	 *
 	 * @TODO: The SchemaMigration API is a mess and should be refactored
 	 * @TODO: Refactoring this should aim to make EM and dbal independent from ext:install by moving SchemaMigration to ext:core
+	 * TODO: Do we need something to do here to make Doctrine working?
 	 * @return \TYPO3\CMS\Install\Status\StatusInterface
 	 */
 	protected function databaseAnalyzerAnalyze() {

@@ -49,6 +49,7 @@ class DatabaseConnect extends Action\AbstractAction implements StepInterface {
 		$configurationManager = $this->objectManager->get('TYPO3\\CMS\\Core\\Configuration\\ConfigurationManager');
 
 		$postValues = $this->postValues['values'];
+		// TODO: Why is here an isset at the first line but not at the other checks?
 		if (isset($postValues['loadDbal'])) {
 			$result[] = $this->executeLoadDbalExtension();
 		} elseif ($postValues['unloadDbal']) {

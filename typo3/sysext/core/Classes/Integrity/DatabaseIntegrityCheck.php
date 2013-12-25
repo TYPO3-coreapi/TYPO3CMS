@@ -461,6 +461,7 @@ class DatabaseIntegrityCheck {
 	 * @return void
 	 * @see getGroupFields()
 	 * @todo Define visibility
+	 * TODO: Look what we have to do here. I guess something with the check for dbal
 	 */
 	public function selectNonEmptyRecordsWithFkeys($fkey_arrays) {
 		if (is_array($fkey_arrays)) {

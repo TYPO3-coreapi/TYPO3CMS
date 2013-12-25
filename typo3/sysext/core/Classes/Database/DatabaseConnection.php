@@ -786,6 +786,7 @@ class DatabaseConnection {
 	 * @param boolean $allowNull Whether to allow NULL values
 	 * @return string Output string; Wrapped in single quotes and quotes in the string (" / ') and \ will be backslashed (or otherwise based on DBAL handler)
 	 * @see quoteStr()
+	 * @todo The $table parameter seems unused
 	 */
 	public function fullQuoteStr($str, $table, $allowNull = FALSE) {
 		if (!$this->isConnected) {

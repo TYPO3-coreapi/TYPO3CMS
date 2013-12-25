@@ -92,6 +92,7 @@ class RteFileLinksUpdateWizard extends AbstractUpdate {
 		$this->storage = $storages[0];
 		$this->fileAdminDir = $GLOBALS['TYPO3_CONF_VARS']['BE']['fileadminDir'];
 		// Check if DBAL is installed or not
+		// TODO: Something to do to make Doctrine work?
 		$this->isDbalInstalled = \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::isLoaded('dbal');
 	}
 

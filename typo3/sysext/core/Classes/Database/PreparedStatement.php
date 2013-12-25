@@ -310,6 +310,7 @@ class PreparedStatement {
 				$row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($this->resource);
 				break;
 			case self::FETCH_NUM:
+				// TODO: Fix the fetch_row function
 				$row = $GLOBALS['TYPO3_DB']->sql_fetch_row($this->resource);
 				break;
 			default:

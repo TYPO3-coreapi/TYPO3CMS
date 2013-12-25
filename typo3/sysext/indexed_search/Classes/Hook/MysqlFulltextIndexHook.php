@@ -48,6 +48,7 @@ class MysqlFulltextIndexHook {
 	 *
 	 * @param array $searchWordsArray Search words
 	 * @param integer $freeIndexUid Pointer to which indexing configuration you want to search in. -1 means no filtering. 0 means only regular indexed content.
+	 * TODO: Change to PDO object
 	 * @return boolean|\mysqli_result|object MySQLi result object / DBAL object
 	 */
 	public function getResultRows_SQLpointer($searchWordsArray, $freeIndexUid = -1) {
@@ -149,6 +150,7 @@ class MysqlFulltextIndexHook {
 	 *
 	 * @param array $searchData Array with search string, boolean indicator, and fulltext index reference
 	 * @param integer $freeIndexUid Pointer to which indexing configuration you want to search in. -1 means no filtering. 0 means only regular indexed content.
+	 * TODO: Change to PDO object
 	 * @return boolean|\mysqli_result|object MySQLi result object / DBAL object
 	 */
 	protected function execFinalQuery_fulltext($searchData, $freeIndexUid = -1) {

@@ -164,6 +164,7 @@ class FileIdentifierHashUpdate extends AbstractUpdate {
 	protected function updateIdentifierHashesForStorage(ResourceStorage $storage) {
 		$queries = array();
 
+		// TODO: Something to do to make Doctrine work?
 		if (!ExtensionManagementUtility::isLoaded('dbal')) {
 			// if DBAL is not loaded, we're using MySQL and can thus use their
 			// SHA1() function
