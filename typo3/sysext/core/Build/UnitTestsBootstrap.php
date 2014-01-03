@@ -82,6 +82,10 @@ define('PATH_site', $webRoot);
 define('TYPO3_MODE', 'BE');
 define('TYPO3_cliMode', TRUE);
 
+/** Composer loader */
+//require_once PATH_typo3 . '/contrib/composer/autoload_real.php';
+require_once PATH_site . 'typo3conf/ext/doctrine_dbal/vendor/autoload.php';
+
 /**
  * We need to fake the current script to be the cli dispatcher to satisfy some GeneralUtility::getIndpEnv tests
  * TODO: properly mock these tests

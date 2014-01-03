@@ -342,6 +342,7 @@ class DatabaseConnect extends Action\AbstractAction implements StepInterface {
 			if (isset($GLOBALS['TYPO3_CONF_VARS']['DB']['database'])) {
 				$databaseConnection->setDatabaseName($GLOBALS['TYPO3_CONF_VARS']['DB']['database']);
 			}
+			// TODO: Get the databasedriver from user input
 			if (isset($GLOBALS['TYPO3_CONF_VARS']['DB']['driver'])) {
 				$databaseConnection->setDatabaseDriver($GLOBALS['TYPO3_CONF_VARS']['DB']['driver']);
 			}
