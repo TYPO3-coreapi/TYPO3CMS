@@ -103,6 +103,7 @@ class AddFlexFormsToAclUpdate extends AbstractUpdate {
 			$this->pObj->includeTCA();
 		}
 		// Get all access lists from groups which are allowed to select or modify the content-table
+		// $search = tt\_content
 		$search = $GLOBALS['TYPO3_DB']->escapeStrForLike($contentTable, 'be_groups');
 		$where = 'deleted = 0 AND non_exclude_fields IS NOT NULL AND non_exclude_fields != ""';
 		$where .= ' AND (tables_select LIKE "%' . $search . '%" OR tables_modify LIKE "%' . $search . '%")';
