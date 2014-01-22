@@ -31,6 +31,15 @@ namespace TYPO3\CMS\Scheduler\Tests\Unit\CronCommand;
 class NormalizeCommandTest extends \TYPO3\CMS\Core\Tests\UnitTestCase {
 
 	/**
+	 * Skip the test if ext:scheduler is not loaded
+	 */
+	public function setUp() {
+		if (!\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::isLoaded('scheduler')) {
+			$this->markTestSkipped('Tests need EXT:scheduler loaded.');
+		}
+	}
+
+	/**
 	 * Create a subclass with protected methods made public
 	 *
 	 * @return string Name of the accessible proxy class

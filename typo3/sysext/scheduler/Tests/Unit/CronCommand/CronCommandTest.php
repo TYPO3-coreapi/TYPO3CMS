@@ -47,6 +47,9 @@ class CronCommandTest extends \TYPO3\CMS\Core\Tests\UnitTestCase {
 	 * again in tearDown()
 	 */
 	public function setUp() {
+		if (!\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::isLoaded('scheduler')) {
+			$this->markTestSkipped('Tests need EXT:scheduler loaded.');
+		}
 		$this->timezoneBackup = date_default_timezone_get();
 		date_default_timezone_set('UTC');
 	}
