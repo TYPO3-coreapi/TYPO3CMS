@@ -50,6 +50,9 @@ class IndexerTest extends \TYPO3\CMS\Core\Tests\UnitTestCase {
 	 * Sets up the test
 	 */
 	public function setUp() {
+		if (!\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::isLoaded('indexed_search')) {
+			$this->markTestSkipped('Tests need EXT:indexed_search loaded.');
+		}
 		$this->fixture = $this->getMock('TYPO3\CMS\IndexedSearch\Indexer', array('dummy'));
 	}
 
