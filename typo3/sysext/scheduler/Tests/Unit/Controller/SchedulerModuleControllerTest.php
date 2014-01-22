@@ -42,6 +42,9 @@ class SchedulerModuleControllerTest extends \TYPO3\CMS\Core\Tests\UnitTestCase {
 	 * @return void
 	 */
 	public function setUp() {
+		if (!\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::isLoaded('scheduler')) {
+			$this->markTestSkipped('Tests need EXT:scheduler loaded.');
+		}
 		$this->testObject = new \TYPO3\CMS\Scheduler\Controller\SchedulerModuleController();
 	}
 
