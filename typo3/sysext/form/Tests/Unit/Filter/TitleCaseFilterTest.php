@@ -41,6 +41,7 @@ class TitleCaseFilterTest extends \TYPO3\CMS\Core\Tests\UnitTestCase {
 	 * Set up
 	 */
 	public function setUp() {
+		mb_internal_encoding('UTF-8');
 		$this->fixture = new \TYPO3\CMS\Form\Filter\TitleCaseFilter();
 	}
 

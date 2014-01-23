@@ -38,7 +38,7 @@ class TitleCaseFilter implements \TYPO3\CMS\Form\Filter\FilterInterface {
 	 * @return string
 	 */
 	public function filter($value) {
-		return ucwords(strtolower((string) $value));
+		return ucwords(mb_strtolower((string) $value));
 	}
 
 }
