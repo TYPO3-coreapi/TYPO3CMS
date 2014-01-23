@@ -84,9 +84,9 @@ class EnumerationTest extends \TYPO3\CMS\Core\Tests\UnitTestCase {
 		$enumClassName = get_class($enumeration);
 
 		$expectedValue = array(
-			'INTEGER_VALUE' => 1,
-			'STRING_VALUE' => 'foo',
-			 '__default' => 1
+				'INTEGER_VALUE' => 1,
+				'STRING_VALUE' => 'foo',
+				 '__default' => 1
 		);
 
 		$result = $enumeration->_getStatic('enumConstants');
