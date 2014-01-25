@@ -923,8 +923,8 @@ abstract class AbstractUserAuthentication {
 
 		if ($statement) {
 			$statement->execute();
-			$user = $statement->fetch();
-			$statement->free();
+			$user = $statement->fetch(\PDO::FETCH_ASSOC);
+			$statement->closeCursor();
 		}
 		if ($user) {
 			// A user was found
@@ -1010,10 +1010,12 @@ abstract class AbstractUserAuthentication {
 	 * @todo Define visibility
 	 */
 	public function isExistingSessionRecord($id) {
-		$statement = $GLOBALS['TYPO3_DB']->prepare_SELECTquery('COUNT(*)', $this->session_table, 'ses_id = :ses_id');
-		$statement->execute(array(':ses_id' => $id));
-		$row = $statement->fetch(\TYPO3\CMS\Core\Database\PreparedStatement::FETCH_NUM);
-		$statement->free();
+		$statement = $GLOBALS['TYPO3_DB']->preparedSelectQuery('COUNT(*)', $this->session_table, 'ses_id = :ses_id');
+		$statement->bindValue(':ses_id', $id);
+		$statement->execute();
+		$row = $statement->fetch(\PDO::FETCH_NUM);
+		$statement->closeCursor();
+
 		return $row[0] ? TRUE : FALSE;
 	}
 
@@ -1050,30 +1052,29 @@ abstract class AbstractUserAuthentication {
 			// If on the flash client, the veri code is valid, then the user session is fetched
 			// from the DB without the hashLock clause
 			if (GeneralUtility::_GP('vC') == $this->veriCode()) {
-				$statement = $GLOBALS['TYPO3_DB']->prepare_SELECTquery('*', $this->session_table . ',' . $this->user_table, $this->session_table . '.ses_id = :ses_id
+				$statement = $GLOBALS['TYPO3_DB']->preparedSelectQuery('*', $this->session_table . ',' . $this->user_table, $this->session_table . '.ses_id = :ses_id
 						AND ' . $this->session_table . '.ses_name = :ses_name
 						AND ' . $this->session_table . '.ses_userid = ' . $this->user_table . '.' . $this->userid_column . '
 						' . $ipLockClause['where'] . '
 						' . $this->user_where_clause());
-				$statement->bindValues(array(
-					':ses_id' => $this->id,
-					':ses_name' => $this->name
-				));
-				$statement->bindValues($ipLockClause['parameters']);
+				$statement->bindValue(':ses_id', $this->id);
+				$statement->bindValue(':ses_name', $this->name);
+				$arrayKey = key($ipLockClause['parameters']);
+				$statement->bindValue($arrayKey, $ipLockClause['parameters'][$arrayKey]);
 			}
 		} else {
-			$statement = $GLOBALS['TYPO3_DB']->prepare_SELECTquery('*', $this->session_table . ',' . $this->user_table, $this->session_table . '.ses_id = :ses_id
+			$statement = $GLOBALS['TYPO3_DB']->preparedSelectQuery('*', $this->session_table . ',' . $this->user_table, $this->session_table . '.ses_id = :ses_id
 					AND ' . $this->session_table . '.ses_name = :ses_name
 					AND ' . $this->session_table . '.ses_userid = ' . $this->user_table . '.' . $this->userid_column . '
 					' . $ipLockClause['where'] . '
 					' . $this->hashLockClause() . '
 					' . $this->user_where_clause());
-			$statement->bindValues(array(
-				':ses_id' => $this->id,
-				':ses_name' => $this->name
-			));
-			$statement->bindValues($ipLockClause['parameters']);
+			$statement->bindValue(':ses_id', $this->id);
+			$statement->bindValue(':ses_name', $this->name);
+			$arrayKey = key($ipLockClause['parameters']);
+			$statement->bindValue($arrayKey, $ipLockClause['parameters'][$arrayKey]);
 		}
+
 		return $statement;
 	}
 

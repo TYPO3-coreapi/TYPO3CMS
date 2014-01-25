@@ -384,13 +384,14 @@ class FrontendUserAuthentication extends \TYPO3\CMS\Core\Authentication\Abstract
 	public function fetchSessionData() {
 		// Gets SesData if any AND if not already selected by session fixation check in ->isExistingSessionRecord()
 		if ($this->id && !count($this->sesData)) {
-			$statement = $GLOBALS['TYPO3_DB']->prepare_SELECTquery('*', 'fe_session_data', 'hash = :hash');
-			$statement->execute(array(':hash' => $this->id));
-			if (($sesDataRow = $statement->fetch()) !== FALSE) {
+			$statement = $GLOBALS['TYPO3_DB']->preparedSelectQuery('*', 'fe_session_data', 'hash = :hash');
+			$statement->bindValue(':hash', $this->id);
+			$statement->execute();
+			if (($sesDataRow = $statement->fetch(\PDO::FETCH_ASSOC)) !== FALSE) {
 				$this->sesData = unserialize($sesDataRow['content']);
 				$this->sessionDataTimestamp = $sesDataRow['tstamp'];
 			}
-			$statement->free();
+			$statement->closeCursor();
 		}
 	}
 
@@ -609,18 +610,18 @@ class FrontendUserAuthentication extends \TYPO3\CMS\Core\Authentication\Abstract
 		$count = parent::isExistingSessionRecord($id);
 		// Check if there are any fe_session_data records for the session ID the client claims to have
 		if ($count == FALSE) {
-			$statement = $GLOBALS['TYPO3_DB']->prepare_SELECTquery('content,tstamp', 'fe_session_data', 'hash = :hash');
-			$res = $statement->execute(array(':hash' => $id));
+			$statement = $GLOBALS['TYPO3_DB']->preparedSelectQuery('content,tstamp', 'fe_session_data', 'hash = :hash');
+			$statement->bindValue(':hash', $id);
+			$res = $statement->execute();
 			if ($res !== FALSE) {
-				if ($sesDataRow = $statement->fetch()) {
+				if ($sesDataRow = $statement->fetch(\PDO::FETCH_ASSOC)) {
 					$count = TRUE;
 					$this->sesData = unserialize($sesDataRow['content']);
 					$this->sessionDataTimestamp = $sesDataRow['tstamp'];
 				}
-				$statement->free();
+				$statement->closeCursor();
 			}
 		}
 		return $count;
 	}
-
 }
