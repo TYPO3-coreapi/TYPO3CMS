@@ -23,6 +23,7 @@ namespace TYPO3\CMS\Core\Tests\Unit\Database;
  *
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
+use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 
 /**
  * Testcase
@@ -57,14 +58,26 @@ class PreparedStatementTest extends \TYPO3\CMS\Core\Tests\UnitTestCase {
 	private function setUpAndReturnDatabaseStub() {
 		$GLOBALS['TYPO3_DB']->connectDB();
 		$databaseLink = $GLOBALS['TYPO3_DB']->getDatabaseHandle();
-		$GLOBALS['TYPO3_DB'] = $this->getAccessibleMock(
-			'TYPO3\\CMS\\Core\\Database\\DatabaseConnection',
-			array('exec_PREPAREDquery'),
-			array(),
-			'',
-			FALSE,
-			FALSE
-		);
+		if (ExtensionManagementUtility::isLoaded('doctrine_dbal')) {
+			$GLOBALS['TYPO3_DB'] = $this->getAccessibleMock(
+				'TYPO3\\DoctrineDbal\\Database\\DatabaseConnection',
+				array('exec_PREPAREDquery'),
+				array(),
+				'',
+				FALSE,
+				FALSE
+			);
+		} else {
+			$GLOBALS['TYPO3_DB'] = $this->getAccessibleMock(
+				'TYPO3\\CMS\\Core\\Database\\DatabaseConnection',
+				array('exec_PREPAREDquery'),
+				array(),
+				'',
+				FALSE,
+				FALSE
+			);
+		}
+
 		$GLOBALS['TYPO3_DB']->_set('isConnected', TRUE);
 		$GLOBALS['TYPO3_DB']->setDatabaseHandle($databaseLink);
 		return $GLOBALS['TYPO3_DB'];
