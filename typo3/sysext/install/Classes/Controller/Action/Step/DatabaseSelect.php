@@ -53,7 +53,7 @@ class DatabaseSelect extends Action\AbstractAction implements StepInterface {
 		if ($postValues['type'] === 'new') {
 			$newDatabaseName = $postValues['new'];
 			if (strlen($newDatabaseName) <= 50) {
-				$createDatabaseResult = $this->databaseConnection->admin_query('CREATE DATABASE ' . $newDatabaseName . ' CHARACTER SET utf8');
+				$createDatabaseResult = $this->databaseConnection->adminQuery('CREATE DATABASE ' . $newDatabaseName . ' CHARACTER SET utf8');
 				if ($createDatabaseResult) {
 					$localConfigurationPathValuePairs['DB/database'] = $newDatabaseName;
 				} else {
@@ -79,7 +79,7 @@ class DatabaseSelect extends Action\AbstractAction implements StepInterface {
 			// Only store database information when it's empty
 			$this->databaseConnection->setDatabaseName($postValues['existing']);
 			$this->databaseConnection->sql_select_db();
-			$existingTables = $this->databaseConnection->admin_get_tables();
+			$existingTables = $this->databaseConnection->adminGetTables();
 			$isInitialInstallation = $configurationManager->getConfigurationValueByPath('SYS/isInitialInstallationInProgress');
 			if (!$isInitialInstallation || count($existingTables) === 0) {
 				$localConfigurationPathValuePairs['DB/database'] = $postValues['existing'];
@@ -144,7 +144,7 @@ class DatabaseSelect extends Action\AbstractAction implements StepInterface {
 	 */
 	protected function getDatabaseList($initialInstallation) {
 		$this->initializeDatabaseConnection();
-		$databaseArray = $this->databaseConnection->admin_get_dbs();
+		$databaseArray = $this->databaseConnection->adminGetDatabases();
 		// Remove mysql organizational tables from database list
 		$reservedDatabaseNames = array('mysql', 'information_schema', 'performance_schema');
 		$allPossibleDatabases = array_diff($databaseArray, $reservedDatabaseNames);
@@ -158,7 +158,7 @@ class DatabaseSelect extends Action\AbstractAction implements StepInterface {
 			foreach ($allPossibleDatabases as $database) {
 				$this->databaseConnection->setDatabaseName($database);
 				$this->databaseConnection->sql_select_db();
-				$existingTables = $this->databaseConnection->admin_get_tables();
+				$existingTables = $this->databaseConnection->adminGetTables();
 				$databases[] = array(
 					'name' => $database,
 					'tables' => count($existingTables),

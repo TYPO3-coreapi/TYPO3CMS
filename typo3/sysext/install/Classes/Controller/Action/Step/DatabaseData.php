@@ -90,7 +90,7 @@ class DatabaseData extends Action\AbstractAction implements StepInterface {
 	 */
 	public function needsExecution() {
 		$result = FALSE;
-		$existingTables = $this->getDatabase()->admin_get_tables();
+		$existingTables = $this->getDatabase()->adminGetTables();
 		if (count($existingTables) === 0) {
 			$result = TRUE;
 		}
@@ -144,7 +144,7 @@ class DatabaseData extends Action\AbstractAction implements StepInterface {
 			$insertStatements = $schemaMigrationService->getTableInsertStatements($statements, $table);
 			foreach ($insertStatements as $insertQuery) {
 				$insertQuery = rtrim($insertQuery, ';');
-				$database->admin_query($insertQuery);
+				$database->adminQuery($insertQuery);
 			}
 		}
 	}

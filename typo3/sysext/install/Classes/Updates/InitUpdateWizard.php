@@ -70,7 +70,7 @@ class InitUpdateWizard extends AbstractUpdate {
 	public function performUpdate(array &$dbQueries, &$customMessages) {
 		$updates = $this->getRequiredUpdates();
 		foreach ($updates as $update) {
-			$GLOBALS['TYPO3_DB']->admin_query($update);
+			$GLOBALS['TYPO3_DB']->adminQuery($update);
 			$dbQueries[] = $update;
 		}
 		return TRUE;

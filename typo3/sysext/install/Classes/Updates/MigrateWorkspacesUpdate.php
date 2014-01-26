@@ -85,7 +85,7 @@ class MigrateWorkspacesUpdate extends InstallSysExtsUpdate {
 					$reason .= ' Both extensions "version" and "workspaces" need to be
 						present to use the entire versioning and workflow featureset of TYPO3.';
 				}
-				$tables = array_keys($GLOBALS['TYPO3_DB']->admin_get_tables());
+				$tables = array_keys($GLOBALS['TYPO3_DB']->adminGetTables());
 				// sys_workspace table might not exists if version extension was never installed
 				if (!in_array('sys_workspace', $tables) || !in_array('sys_workspace_stage', $tables)) {
 					$result = TRUE;

@@ -65,7 +65,7 @@ class ClearCacheService {
 
 		// Get all table names starting with 'cf_' and truncate them
 		$database = $this->getDatabaseInstance();
-		$tables = $database->admin_get_tables();
+		$tables = $database->adminGetTables();
 		foreach ($tables as $table) {
 			$tableName = $table['Name'];
 			if (substr($tableName, 0, 3) === 'cf_') {

@@ -311,13 +311,13 @@ class InstallUtility implements \TYPO3\CMS\Core\SingletonInterface {
 			$diff = $this->installToolSqlParser->getDatabaseExtra($fieldDefinitionsFromFile, $fieldDefinitionsFromCurrentDatabase);
 			$updateStatements = $this->installToolSqlParser->getUpdateSuggestions($diff);
 			foreach ((array) $updateStatements['add'] as $string) {
-				$GLOBALS['TYPO3_DB']->admin_query($string);
+				$GLOBALS['TYPO3_DB']->adminQuery($string);
 			}
 			foreach ((array) $updateStatements['change'] as $string) {
-				$GLOBALS['TYPO3_DB']->admin_query($string);
+				$GLOBALS['TYPO3_DB']->adminQuery($string);
 			}
 			foreach ((array) $updateStatements['create_table'] as $string) {
-				$GLOBALS['TYPO3_DB']->admin_query($string);
+				$GLOBALS['TYPO3_DB']->adminQuery($string);
 			}
 		}
 	}
@@ -333,12 +333,12 @@ class InstallUtility implements \TYPO3\CMS\Core\SingletonInterface {
 		list($statementsPerTable, $insertCount) = $this->installToolSqlParser->getCreateTables($statements, 1);
 		// Traverse the tables
 		foreach ($statementsPerTable as $table => $query) {
-			$GLOBALS['TYPO3_DB']->admin_query('DROP TABLE IF EXISTS ' . $table);
-			$GLOBALS['TYPO3_DB']->admin_query($query);
+			$GLOBALS['TYPO3_DB']->adminQuery('DROP TABLE IF EXISTS ' . $table);
+			$GLOBALS['TYPO3_DB']->adminQuery($query);
 			if ($insertCount[$table]) {
 				$insertStatements = $this->installToolSqlParser->getTableInsertStatements($statements, $table);
 				foreach ($insertStatements as $statement) {
-					$GLOBALS['TYPO3_DB']->admin_query($statement);
+					$GLOBALS['TYPO3_DB']->adminQuery($statement);
 				}
 			}
 		}

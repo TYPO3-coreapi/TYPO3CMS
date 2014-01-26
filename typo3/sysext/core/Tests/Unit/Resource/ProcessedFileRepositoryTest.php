@@ -23,6 +23,7 @@ namespace TYPO3\CMS\Core\Tests\Unit\Resource;
  *
  * This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
+use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 
 /**
  * Processed file repository test
@@ -34,8 +35,12 @@ class ProcessedFileRepositoryTest extends \TYPO3\CMS\Core\Tests\UnitTestCase {
 	 */
 	public function cleanUnavailableColumnsWorks() {
 		$fixture = $this->getAccessibleMock('TYPO3\\CMS\\Core\\Resource\\ProcessedFileRepository', array('dummy'), array(), '', FALSE);
-		$databaseMock = $this->getAccessibleMock('TYPO3\\CMS\\Core\\Database\\DatabaseConnection', array('admin_get_fields'));
-		$databaseMock->expects($this->once())->method('admin_get_fields')->will($this->returnValue(array('storage' => '', 'checksum' => '')));
+		if (ExtensionManagementUtility::isLoaded('doctrine_dbal')) {
+			$databaseMock = $this->getAccessibleMock('TYPO3\\DoctrineDbal\\Database\\DatabaseConnection', array('adminGetFields'));
+		} else {
+			$databaseMock = $this->getAccessibleMock('TYPO3\\CMS\\Core\\Database\\DatabaseConnection', array('admin_get_fields'));
+		}
+		$databaseMock->expects($this->once())->method('adminGetFields')->will($this->returnValue(array('storage' => '', 'checksum' => '')));
 		$fixture->_set('databaseConnection', $databaseMock);
 
 		$actual = $fixture->_call('cleanUnavailableColumns', array('storage' => 'a', 'checksum' => 'b', 'key3' => 'c'));

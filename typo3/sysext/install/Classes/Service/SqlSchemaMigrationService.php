@@ -44,7 +44,7 @@ class SqlSchemaMigrationService {
 	protected $deletedPrefixKey = 'zzz_deleted_';
 
 	/**
-	 * @var array Caching output of $GLOBALS['TYPO3_DB']->admin_get_charsets()
+	 * @var array Caching output of $GLOBALS['TYPO3_DB']->adminGetCharset()
 	 */
 	protected $character_sets = array();
 
@@ -166,8 +166,8 @@ class SqlSchemaMigrationService {
 	public function getCollationForCharset($charset) {
 		// Load character sets, if not cached already
 		if (!count($this->character_sets)) {
-			if (method_exists($GLOBALS['TYPO3_DB'], 'admin_get_charsets')) {
-				$this->character_sets = $GLOBALS['TYPO3_DB']->admin_get_charsets();
+			if (method_exists($GLOBALS['TYPO3_DB'], 'adminGetCharset')) {
+				$this->character_sets = $GLOBALS['TYPO3_DB']->adminGetCharset();
 			} else {
 				// Add empty element to avoid that the check will be repeated
 				$this->character_sets[$charset] = array();
@@ -191,15 +191,15 @@ class SqlSchemaMigrationService {
 		$tempKeysPrefix = array();
 		$GLOBALS['TYPO3_DB']->sql_select_db();
 		echo $GLOBALS['TYPO3_DB']->sqlErrorMessage();
-		$tables = $GLOBALS['TYPO3_DB']->admin_get_tables();
+		$tables = $GLOBALS['TYPO3_DB']->adminGetTables();
 		foreach ($tables as $tableName => $tableStatus) {
 			// Fields
-			$fieldInformation = $GLOBALS['TYPO3_DB']->admin_get_fields($tableName);
+			$fieldInformation = $GLOBALS['TYPO3_DB']->adminGetFields($tableName);
 			foreach ($fieldInformation as $fN => $fieldRow) {
 				$total[$tableName]['fields'][$fN] = $this->assembleFieldDefinition($fieldRow);
 			}
 			// Keys
-			$keyInformation = $GLOBALS['TYPO3_DB']->admin_get_keys($tableName);
+			$keyInformation = $GLOBALS['TYPO3_DB']->adminGetKeys($tableName);
 			foreach ($keyInformation as $keyRow) {
 				$keyName = $keyRow['Key_name'];
 				$colName = $keyRow['Column_name'];
@@ -611,7 +611,7 @@ class SqlSchemaMigrationService {
 		if (is_array($arr)) {
 			foreach ($arr as $key => $string) {
 				if (isset($keyArr[$key]) && $keyArr[$key]) {
-					$res = $GLOBALS['TYPO3_DB']->admin_query($string);
+					$res = $GLOBALS['TYPO3_DB']->adminQuery($string);
 					if ($res === FALSE) {
 						$result[$key] = $GLOBALS['TYPO3_DB']->sqlErrorMessage();
 					} elseif (is_resource($res) || is_a($res, '\\mysqli_result')) {
@@ -631,10 +631,10 @@ class SqlSchemaMigrationService {
 	 * Returns list of tables in the database
 	 *
 	 * @return array List of tables.
-	 * @see \TYPO3\CMS\Core\Database\DatabaseConnection::admin_get_tables()
+	 * @see \TYPO3\CMS\Core\Database\DatabaseConnection::adminGetTables()
 	 */
 	public function getListOfTables() {
-		$whichTables = $GLOBALS['TYPO3_DB']->admin_get_tables(TYPO3_db);
+		$whichTables = $GLOBALS['TYPO3_DB']->adminGetTables(TYPO3_db);
 		foreach ($whichTables as $key => &$value) {
 			$value = $key;
 		}

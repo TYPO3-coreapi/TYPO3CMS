@@ -89,7 +89,7 @@ class ExtensionManagerTables extends AbstractUpdate {
 		$updateStatements = $this->getUpdateStatements();
 		if (empty($updateStatements)) {
 			// Check for repository database table
-			$databaseTables = $GLOBALS['TYPO3_DB']->admin_get_tables();
+			$databaseTables = $GLOBALS['TYPO3_DB']->adminGetTables();
 			if (!isset($databaseTables['tx_extensionmanager_domain_model_repository'])) {
 				$result = TRUE;
 			} else {
@@ -134,17 +134,17 @@ class ExtensionManagerTables extends AbstractUpdate {
 		// First perform all create, add and change queries
 		$updateStatements = $this->getUpdateStatements();
 		foreach ((array) $updateStatements['add'] as $string) {
-			$GLOBALS['TYPO3_DB']->admin_query($string);
+			$GLOBALS['TYPO3_DB']->adminQuery($string);
 			$dbQueries[] = $string;
 			$result = ($result || $this->hasError($customMessages));
 		}
 		foreach ((array) $updateStatements['change'] as $string) {
-			$GLOBALS['TYPO3_DB']->admin_query($string);
+			$GLOBALS['TYPO3_DB']->adminQuery($string);
 			$dbQueries[] = $string;
 			$result = ($result || $this->hasError($customMessages));
 		}
 		foreach ((array) $updateStatements['create_table'] as $string) {
-			$GLOBALS['TYPO3_DB']->admin_query($string);
+			$GLOBALS['TYPO3_DB']->adminQuery($string);
 			$dbQueries[] = $string;
 			$result = ($result || $this->hasError($customMessages));
 		}
@@ -154,7 +154,7 @@ class ExtensionManagerTables extends AbstractUpdate {
 		$statements = $this->getInstallToolSqlParser()->getStatementarray($rawDefinitions, 1);
 		foreach ($statements as $statement) {
 			if (trim($statement) !== '') {
-				$GLOBALS['TYPO3_DB']->admin_query($statement);
+				$GLOBALS['TYPO3_DB']->adminQuery($statement);
 				$dbQueries[] = $statement;
 				$result = ($result || $this->hasError($customMessages));
 			}

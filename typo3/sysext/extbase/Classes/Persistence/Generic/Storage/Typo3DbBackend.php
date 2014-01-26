@@ -1024,7 +1024,7 @@ class Typo3DbBackend implements \TYPO3\CMS\Extbase\Persistence\Generic\Storage\B
 	protected function addPageIdStatement($tableName, array &$sql, array $storagePageIds) {
 		$tableColumns = $this->tableColumnCache->get($tableName);
 		if ($tableColumns === FALSE) {
-			$tableColumns = $this->databaseHandle->admin_get_fields($tableName);
+			$tableColumns = $this->databaseHandle->adminGetFields($tableName);
 			$this->tableColumnCache->set($tableName, $tableColumns);
 		}
 		if (is_array($GLOBALS['TCA'][$tableName]['ctrl']) && array_key_exists('pid', $tableColumns)) {
@@ -1241,7 +1241,7 @@ class Typo3DbBackend implements \TYPO3\CMS\Extbase\Persistence\Generic\Storage\B
 		}
 		$pageIdsToClear = array();
 		$storagePage = NULL;
-		$columns = $this->databaseHandle->admin_get_fields($tableName);
+		$columns = $this->databaseHandle->adminGetFields($tableName);
 		if (array_key_exists('pid', $columns)) {
 			$result = $this->databaseHandle->exec_SELECTquery('pid', $tableName, 'uid=' . (int)$uid);
 			if ($row = $this->databaseHandle->sql_fetch_assoc($result)) {

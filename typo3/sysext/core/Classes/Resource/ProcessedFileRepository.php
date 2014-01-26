@@ -196,6 +196,6 @@ class ProcessedFileRepository extends AbstractRepository {
 	 * @return array
 	 */
 	protected function cleanUnavailableColumns(array $data) {
-		return array_intersect_key($data, $this->databaseConnection->admin_get_fields($this->table));
+		return array_intersect_key($data, $this->databaseConnection->adminGetFields($this->table));
 	}
 }

@@ -61,7 +61,7 @@ class FilePermissionUpdate extends AbstractUpdate {
 			// Field might not be there, so we need an update run to add the field
 			return TRUE;
 		}
-		$beUsersFieldInformation = $GLOBALS['TYPO3_DB']->admin_get_fields('be_users');
+		$beUsersFieldInformation = $GLOBALS['TYPO3_DB']->adminGetFields('be_users');
 		if (isset($beUsersFieldInformation['fileoper_perms'])) {
 			// Fetch user records where the old permission field is not empty but the new one is
 			$notMigratedRowsCount = $GLOBALS['TYPO3_DB']->exec_SELECTcountRows(
@@ -73,7 +73,7 @@ class FilePermissionUpdate extends AbstractUpdate {
 				$updateNeeded = TRUE;
 			}
 		} else {
-			$beGroupsFieldInformation = $GLOBALS['TYPO3_DB']->admin_get_fields('be_groups');
+			$beGroupsFieldInformation = $GLOBALS['TYPO3_DB']->adminGetFields('be_groups');
 			if (isset($beGroupsFieldInformation['fileoper_perms'])) {
 				// Fetch group records where the old permission field is not empty but the new one is
 				$notMigratedRowsCount = $GLOBALS['TYPO3_DB']->exec_SELECTcountRows(
@@ -100,7 +100,7 @@ class FilePermissionUpdate extends AbstractUpdate {
 		// First perform all add update statements to database
 		$updateStatements = $this->getUpdateStatements();
 		foreach ((array) $updateStatements['add'] as $query) {
-			$GLOBALS['TYPO3_DB']->admin_query($query);
+			$GLOBALS['TYPO3_DB']->adminQuery($query);
 			$dbQueries[] = $query;
 			if ($GLOBALS['TYPO3_DB']->sqlErrorMessage()) {
 				$customMessages = 'SQL-ERROR: ' . htmlspecialchars($GLOBALS['TYPO3_DB']->sqlErrorMessage());

@@ -469,7 +469,7 @@ class DatabaseIntegrityCheck {
 				if ($GLOBALS['TCA'][$table] && trim($field_list)) {
 					$fieldArr = explode(',', $field_list);
 					if (\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::isLoaded('dbal')) {
-						$fields = $GLOBALS['TYPO3_DB']->admin_get_fields($table);
+						$fields = $GLOBALS['TYPO3_DB']->adminGetFields($table);
 						$field = array_shift($fieldArr);
 						$cl_fl = $GLOBALS['TYPO3_DB']->MetaType($fields[$field]['type'], $table) == 'I' || $GLOBALS['TYPO3_DB']->MetaType($fields[$field]['type'], $table) == 'N' || $GLOBALS['TYPO3_DB']->MetaType($fields[$field]['type'], $table) == 'R' ? $field . '<>0' : $field . '<>\'\'';
 						foreach ($fieldArr as $field) {

@@ -57,7 +57,7 @@ class FileTableSplittingUpdate extends AbstractUpdate {
 
 		$description = 'In TYPO3 CMS 6.2 LTS the metadata has been split off to an external table. This wizard will migrate the data. If you have extended the sys_file table manually your custom data will be included, too, if you create TCA and columns in sys_file_metadata before running this wizard.';
 
-		if (!array_key_exists($this->metaDataTable, $GLOBALS['TYPO3_DB']->admin_get_tables())) {
+		if (!array_key_exists($this->metaDataTable, $GLOBALS['TYPO3_DB']->adminGetTables())) {
 			$result = TRUE;
 		} else {
 			$sysFileCount = $GLOBALS['TYPO3_DB']->exec_SELECTcountRows('uid', 'sys_file');
@@ -79,7 +79,7 @@ class FileTableSplittingUpdate extends AbstractUpdate {
 	 */
 	public function performUpdate(array &$dbQueries, &$customMessages) {
 
-		if (!array_key_exists($this->metaDataTable, $GLOBALS['TYPO3_DB']->admin_get_tables())) {
+		if (!array_key_exists($this->metaDataTable, $GLOBALS['TYPO3_DB']->adminGetTables())) {
 			$customMessages = 'ERROR! Make sure you created the table before. If you added custom metadata to sys_file table add TCA configuration as well as sql definitions to sys_file_metadata, too.';
 			return FALSE;
 		}
@@ -112,8 +112,8 @@ class FileTableSplittingUpdate extends AbstractUpdate {
 	 */
 	protected function detectFieldsToMigrate() {
 		$fieldsBlackListed = array('uid', 'deleted', 'sys_language_uid');
-		$fieldsInSysFile = array_keys($GLOBALS['TYPO3_DB']->admin_get_fields('sys_file'));
-		$fieldsInSysFileMetaData = array_keys($GLOBALS['TYPO3_DB']->admin_get_fields($this->metaDataTable));
+		$fieldsInSysFile = array_keys($GLOBALS['TYPO3_DB']->adminGetFields('sys_file'));
+		$fieldsInSysFileMetaData = array_keys($GLOBALS['TYPO3_DB']->adminGetFields($this->metaDataTable));
 
 		$commonFields = array_intersect($fieldsInSysFileMetaData, $fieldsInSysFile);
 		$commonFields = array_diff($commonFields, $fieldsBlackListed);
