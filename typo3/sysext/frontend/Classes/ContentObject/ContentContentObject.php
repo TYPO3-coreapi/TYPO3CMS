@@ -75,7 +75,7 @@ class ContentContentObject extends \TYPO3\CMS\Frontend\ContentObject\AbstractCon
 		$again = FALSE;
 		do {
 			$res = $this->cObj->exec_getQuery($conf['table'], $conf['select.']);
-			if ($error = $GLOBALS['TYPO3_DB']->sql_error()) {
+			if ($error = $GLOBALS['TYPO3_DB']->sqlErrorMessage()) {
 				$GLOBALS['TT']->setTSlogMessage($error, 3);
 			} else {
 				$this->cObj->currentRecordTotal = $GLOBALS['TYPO3_DB']->sql_num_rows($res);

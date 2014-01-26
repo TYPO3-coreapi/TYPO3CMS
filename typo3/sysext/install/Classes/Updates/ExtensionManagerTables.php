@@ -113,8 +113,8 @@ class ExtensionManagerTables extends AbstractUpdate {
 	 */
 	protected function hasError(&$customMessages) {
 		$result = FALSE;
-		if ($GLOBALS['TYPO3_DB']->sql_error()) {
-			$customMessages .= '<br /><br />SQL-ERROR: ' . htmlspecialchars($GLOBALS['TYPO3_DB']->sql_error());
+		if ($GLOBALS['TYPO3_DB']->sqlErrorMessage()) {
+			$customMessages .= '<br /><br />SQL-ERROR: ' . htmlspecialchars($GLOBALS['TYPO3_DB']->sqlErrorMessage());
 			$result = TRUE;
 		}
 

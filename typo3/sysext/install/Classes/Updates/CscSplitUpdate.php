@@ -86,8 +86,8 @@ class CscSplitUpdate extends AbstractUpdate {
 		$where = 'include_static_file LIKE "%EXT:css_styled_content/static/%"';
 		$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery($fields, $table, $where);
 		$dbQueries[] = str_replace(chr(10), ' ', $GLOBALS['TYPO3_DB']->debug_lastBuiltQuery);
-		if ($GLOBALS['TYPO3_DB']->sql_error()) {
-			$customMessages = 'SQL-ERROR: ' . htmlspecialchars($GLOBALS['TYPO3_DB']->sql_error());
+		if ($GLOBALS['TYPO3_DB']->sqlErrorMessage()) {
+			$customMessages = 'SQL-ERROR: ' . htmlspecialchars($GLOBALS['TYPO3_DB']->sqlErrorMessage());
 		}
 		$templates = array();
 		while ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res)) {
@@ -176,8 +176,8 @@ class CscSplitUpdate extends AbstractUpdate {
 			);
 			$GLOBALS['TYPO3_DB']->exec_UPDATEquery($table, $where, $field_values);
 			$dbQueries[] = str_replace(chr(10), ' ', $GLOBALS['TYPO3_DB']->debug_lastBuiltQuery);
-			if ($GLOBALS['TYPO3_DB']->sql_error()) {
-				$customMessages = 'SQL-ERROR: ' . htmlspecialchars($GLOBALS['TYPO3_DB']->sql_error());
+			if ($GLOBALS['TYPO3_DB']->sqlErrorMessage()) {
+				$customMessages = 'SQL-ERROR: ' . htmlspecialchars($GLOBALS['TYPO3_DB']->sqlErrorMessage());
 			}
 		}
 	}

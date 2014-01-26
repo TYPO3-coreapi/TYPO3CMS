@@ -26,6 +26,7 @@ namespace TYPO3\CMS\Core\Tests\Unit\Resource\Service;
  *
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
+use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 
 /**
  * Testcase for the file indexing service
@@ -77,7 +78,12 @@ class IndexerServiceTest extends \TYPO3\CMS\Core\Tests\UnitTestCase {
 		$repositoryMock->expects($this->once())->method('add');
 		$fixture->expects($this->any())->method('getFileIndexRepository')->will($this->returnValue($repositoryMock));
 
-		$GLOBALS['TYPO3_DB'] = $this->getMock('TYPO3\\CMS\\Core\\Database\\DatabaseConnection', array(), array(), '', FALSE);
+		if (ExtensionManagementUtility::isLoaded('doctrine_dbal')) {
+			$GLOBALS['TYPO3_DB'] = $this->getMock('TYPO3\\DoctrineDbal\\Database\\DatabaseConnection', array(), array(), '', FALSE);
+		} else {
+			$GLOBALS['TYPO3_DB'] = $this->getMock('TYPO3\\CMS\\Core\\Database\\DatabaseConnection', array(), array(), '', FALSE);
+		}
+
 
 		$arrayConstraint = $this->logicalAnd(
 			$this->arrayHasKey('crdate'),

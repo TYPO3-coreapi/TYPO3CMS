@@ -4332,7 +4332,7 @@ class DataHandler {
 					}
 					// 1 means insert, 3 means delete
 					$state = $undeleteRecord ? 1 : 3;
-					if (!$GLOBALS['TYPO3_DB']->sql_error()) {
+					if (!$GLOBALS['TYPO3_DB']->sqlErrorMessage()) {
 						if ($forceHardDelete) {
 							$message = 'Record \'%s\' (%s) was deleted unrecoverable from page \'%s\' (%s)';
 						} else {
@@ -4345,7 +4345,7 @@ class DataHandler {
 							$propArr['pid']
 						), $propArr['event_pid']);
 					} else {
-						$this->log($table, $uid, $state, 0, 100, $GLOBALS['TYPO3_DB']->sql_error());
+						$this->log($table, $uid, $state, 0, 100, $GLOBALS['TYPO3_DB']->sqlErrorMessage());
 					}
 					// Update reference index:
 					$this->updateRefIndex($table, $uid);
@@ -5844,7 +5844,7 @@ class DataHandler {
 				// Execute the UPDATE query:
 				$GLOBALS['TYPO3_DB']->exec_UPDATEquery($table, 'uid=' . (int)$id, $fieldArray);
 				// If succees, do...:
-				if (!$GLOBALS['TYPO3_DB']->sql_error()) {
+				if (!$GLOBALS['TYPO3_DB']->sqlErrorMessage()) {
 					if ($this->checkStoredRecords) {
 						$newRow = $this->checkStoredRecord($table, $id, $fieldArray, 2);
 					}
@@ -5862,7 +5862,7 @@ class DataHandler {
 						unset($this->pageCache[$id]);
 					}
 				} else {
-					$this->log($table, $id, 2, 0, 2, 'SQL error: \'%s\' (%s)', 12, array($GLOBALS['TYPO3_DB']->sql_error(), $table . ':' . $id));
+					$this->log($table, $id, 2, 0, 2, 'SQL error: \'%s\' (%s)', 12, array($GLOBALS['TYPO3_DB']->sqlErrorMessage(), $table . ':' . $id));
 				}
 			}
 		}
@@ -5903,7 +5903,7 @@ class DataHandler {
 				// Execute the INSERT query:
 				$GLOBALS['TYPO3_DB']->exec_INSERTquery($table, $fieldArray);
 				// If succees, do...:
-				if (!$GLOBALS['TYPO3_DB']->sql_error()) {
+				if (!$GLOBALS['TYPO3_DB']->sqlErrorMessage()) {
 					// Set mapping for NEW... -> real uid:
 					// the NEW_id now holds the 'NEW....' -id
 					$NEW_id = $id;
@@ -5930,7 +5930,7 @@ class DataHandler {
 					}
 					return $id;
 				} else {
-					$this->log($table, $id, 1, 0, 2, 'SQL error: \'%s\' (%s)', 12, array($GLOBALS['TYPO3_DB']->sql_error(), $table . ':' . $id));
+					$this->log($table, $id, 1, 0, 2, 'SQL error: \'%s\' (%s)', 12, array($GLOBALS['TYPO3_DB']->sqlErrorMessage(), $table . ':' . $id));
 				}
 			}
 		}

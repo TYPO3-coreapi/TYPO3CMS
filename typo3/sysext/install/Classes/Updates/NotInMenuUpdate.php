@@ -76,8 +76,8 @@ class NotInMenuUpdate extends AbstractUpdate {
 			);
 			$res = $GLOBALS['TYPO3_DB']->exec_UPDATEquery('pages', 'doktype=5', $updateArray);
 			$dbQueries[] = str_replace(chr(10), ' ', $GLOBALS['TYPO3_DB']->debug_lastBuiltQuery);
-			if ($GLOBALS['TYPO3_DB']->sql_error()) {
-				$customMessages = 'SQL-ERROR: ' . htmlspecialchars($GLOBALS['TYPO3_DB']->sql_error());
+			if ($GLOBALS['TYPO3_DB']->sqlErrorMessage()) {
+				$customMessages = 'SQL-ERROR: ' . htmlspecialchars($GLOBALS['TYPO3_DB']->sqlErrorMessage());
 			} else {
 				$result = TRUE;
 			}

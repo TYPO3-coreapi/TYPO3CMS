@@ -698,7 +698,7 @@ class ActionTask implements \TYPO3\CMS\Taskcenter\TaskInterface {
 				$queryIsEmpty = FALSE;
 				if ($sqlQuery) {
 					$res = $GLOBALS['TYPO3_DB']->sql_query($sqlQuery);
-					if (!$GLOBALS['TYPO3_DB']->sql_error()) {
+					if (!$GLOBALS['TYPO3_DB']->sqlErrorMessage()) {
 						$fullsearch->formW = 48;
 						// Additional configuration
 						$GLOBALS['SOBE']->MOD_SETTINGS['search_result_labels'] = 1;
@@ -709,7 +709,7 @@ class ActionTask implements \TYPO3\CMS\Taskcenter\TaskInterface {
 							$actionContent .= '<br /><br /><a href="' . GeneralUtility::getIndpEnv('REQUEST_URI') . '&download_file=1"><strong>' . $GLOBALS['LANG']->getLL('action_download_file') . '</strong></a>';
 						}
 					} else {
-						$actionContent .= $GLOBALS['TYPO3_DB']->sql_error();
+						$actionContent .= $GLOBALS['TYPO3_DB']->sqlErrorMessage();
 					}
 				} else {
 					// Query is empty (not built)

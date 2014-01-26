@@ -175,8 +175,8 @@ class AddFlexFormsToAclUpdate extends AbstractUpdate {
 			// Get last executed query
 			$dbQueries[] = str_replace(chr(10), ' ', $GLOBALS['TYPO3_DB']->debug_lastBuiltQuery);
 			// Check for errors
-			if ($GLOBALS['TYPO3_DB']->sql_error()) {
-				$customMessages = 'SQL-ERROR: ' . htmlspecialchars($GLOBALS['TYPO3_DB']->sql_error());
+			if ($GLOBALS['TYPO3_DB']->sqlErrorMessage()) {
+				$customMessages = 'SQL-ERROR: ' . htmlspecialchars($GLOBALS['TYPO3_DB']->sqlErrorMessage());
 				return FALSE;
 			}
 		}

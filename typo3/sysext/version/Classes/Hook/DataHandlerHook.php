@@ -836,13 +836,13 @@ class DataHandlerHook {
 										$tcemainObj->compareFieldArrayWithCurrentAndUnset($table, $swapWith, $curVersion);
 										// Execute swapping:
 										$sqlErrors = array();
-										$GLOBALS['TYPO3_DB']->exec_UPDATEquery($table, 'uid=' . (int)$id, $swapVersion);
-										if ($GLOBALS['TYPO3_DB']->sql_error()) {
-											$sqlErrors[] = $GLOBALS['TYPO3_DB']->sql_error();
+										$GLOBALS['TYPO3_DB']->exec_UPDATEquery($table, 'uid=' . intval($id), $swapVersion);
+										if ($GLOBALS['TYPO3_DB']->sqlErrorMessage()) {
+											$sqlErrors[] = $GLOBALS['TYPO3_DB']->sqlErrorMessage();
 										} else {
-											$GLOBALS['TYPO3_DB']->exec_UPDATEquery($table, 'uid=' . (int)$swapWith, $curVersion);
-											if ($GLOBALS['TYPO3_DB']->sql_error()) {
-												$sqlErrors[] = $GLOBALS['TYPO3_DB']->sql_error();
+											$GLOBALS['TYPO3_DB']->exec_UPDATEquery($table, 'uid=' . intval($swapWith), $curVersion);
+											if ($GLOBALS['TYPO3_DB']->sqlErrorMessage()) {
+												$sqlErrors[] = $GLOBALS['TYPO3_DB']->sqlErrorMessage();
 											} else {
 												unlink($lockFileName);
 											}

@@ -190,7 +190,7 @@ class SqlSchemaMigrationService {
 		$tempKeys = array();
 		$tempKeysPrefix = array();
 		$GLOBALS['TYPO3_DB']->sql_select_db();
-		echo $GLOBALS['TYPO3_DB']->sql_error();
+		echo $GLOBALS['TYPO3_DB']->sqlErrorMessage();
 		$tables = $GLOBALS['TYPO3_DB']->admin_get_tables();
 		foreach ($tables as $tableName => $tableStatus) {
 			// Fields
@@ -613,7 +613,7 @@ class SqlSchemaMigrationService {
 				if (isset($keyArr[$key]) && $keyArr[$key]) {
 					$res = $GLOBALS['TYPO3_DB']->admin_query($string);
 					if ($res === FALSE) {
-						$result[$key] = $GLOBALS['TYPO3_DB']->sql_error();
+						$result[$key] = $GLOBALS['TYPO3_DB']->sqlErrorMessage();
 					} elseif (is_resource($res) || is_a($res, '\\mysqli_result')) {
 						$GLOBALS['TYPO3_DB']->sql_free_result($res);
 					}

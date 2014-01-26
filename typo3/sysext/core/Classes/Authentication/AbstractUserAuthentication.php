@@ -868,7 +868,7 @@ abstract class AbstractUserAuthentication {
 		$insertFields = $this->getNewSessionRecord($tempuser);
 		$inserted = (boolean) $GLOBALS['TYPO3_DB']->exec_INSERTquery($this->session_table, $insertFields);
 		if (!$inserted) {
-			$message = 'Session data could not be written to DB. Error: ' . $GLOBALS['TYPO3_DB']->sql_error();
+			$message = 'Session data could not be written to DB. Error: ' . $GLOBALS['TYPO3_DB']->sqlErrorMessage();
 			GeneralUtility::sysLog($message, 'Core', GeneralUtility::SYSLOG_SEVERITY_WARNING);
 			if ($this->writeDevLog) {
 				GeneralUtility::devLog($message, 'TYPO3\\CMS\\Core\\Authentication\\AbstractUserAuthentication', 2);

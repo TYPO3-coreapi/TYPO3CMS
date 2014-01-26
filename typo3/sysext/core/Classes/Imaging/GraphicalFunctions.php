@@ -2342,7 +2342,7 @@ class GraphicalFunctions {
 				'imageheight' => $identifyResult[1]
 			);
 			$GLOBALS['TYPO3_DB']->exec_INSERTquery('cache_imagesizes', $fieldArray);
-			if (!($err = $GLOBALS['TYPO3_DB']->sql_error())) {
+			if (!($err = $GLOBALS['TYPO3_DB']->sqlErrorMessage())) {
 				$result = TRUE;
 			}
 		}

@@ -3536,7 +3536,7 @@ class ContentObjectRenderer {
 		$result = FALSE;
 		$conf['select.']['selectFields'] = 'count(*)';
 		$res = $this->exec_getQuery($conf['table'], $conf['select.']);
-		if ($error = $GLOBALS['TYPO3_DB']->sql_error()) {
+		if ($error = $GLOBALS['TYPO3_DB']->sqlErrorMessage()) {
 			$GLOBALS['TT']->setTSlogMessage($error, 3);
 		} else {
 			$row = $GLOBALS['TYPO3_DB']->sql_fetch_row($res);
@@ -7641,7 +7641,7 @@ class ContentObjectRenderer {
 			// Finding the total number of records, if used:
 			if (strstr(strtolower($conf['begin'] . $conf['max']), 'total')) {
 				$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('count(*)', $table, $queryParts['WHERE'], $queryParts['GROUPBY']);
-				if ($error = $GLOBALS['TYPO3_DB']->sql_error()) {
+				if ($error = $GLOBALS['TYPO3_DB']->sqlErrorMessage()) {
 					$GLOBALS['TT']->setTSlogMessage($error);
 				} else {
 					$row = $GLOBALS['TYPO3_DB']->sql_fetch_row($res);
@@ -7846,7 +7846,7 @@ class ContentObjectRenderer {
 		$outArr = array();
 		if (is_array($listArr) && count($listArr)) {
 			$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid', 'pages', 'uid IN (' . implode(',', $listArr) . ')' . $this->enableFields('pages') . ' AND doktype NOT IN (' . $this->checkPid_badDoktypeList . ')');
-			if ($error = $GLOBALS['TYPO3_DB']->sql_error()) {
+			if ($error = $GLOBALS['TYPO3_DB']->sqlErrorMessage()) {
 				$GLOBALS['TT']->setTSlogMessage($error . ': ' . $GLOBALS['TYPO3_DB']->debug_lastBuiltQuery, 3);
 			} else {
 				while ($row = $GLOBALS['TYPO3_DB']->sql_fetch_assoc($res)) {

@@ -1214,7 +1214,7 @@ class Typo3DbBackend implements \TYPO3\CMS\Extbase\Persistence\Generic\Storage\B
 	 * @throws \TYPO3\CMS\Extbase\Persistence\Generic\Storage\Exception\SqlErrorException
 	 */
 	protected function checkSqlErrors($sql = '') {
-		$error = $this->databaseHandle->sql_error();
+		$error = $this->databaseHandle->sqlErrorMessage();
 		if ($error !== '') {
 			$error .= $sql ? ': ' . $sql : '';
 			throw new \TYPO3\CMS\Extbase\Persistence\Generic\Storage\Exception\SqlErrorException($error, 1247602160);

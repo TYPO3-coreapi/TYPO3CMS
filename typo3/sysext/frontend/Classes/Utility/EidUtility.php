@@ -60,7 +60,7 @@ class EidUtility {
 
 	/**
 	 * Connecting to database. If the function fails, last error message
-	 * can be retrieved using $GLOBALS['TYPO3_DB']->sql_error().
+	 * can be retrieved using $GLOBALS['TYPO3_DB']->sqlErrorMessage().
 	 *
 	 * @return boolean TRUE if connection was successful
 	 * @deprecated since 6.1, database will connect itself if needed. Will be removed two versions later

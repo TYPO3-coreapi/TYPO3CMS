@@ -103,7 +103,7 @@ class TableGarbageCollectionTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask 
 			throw new \RuntimeException('TYPO3\\CMS\\Scheduler\\Task\\TableGarbageCollectionTask misconfiguration: Either expireField or dateField must be defined for table ' . $table, 1308355268);
 		}
 		$GLOBALS['TYPO3_DB']->exec_DELETEquery($table, $where);
-		$error = $GLOBALS['TYPO3_DB']->sql_error();
+		$error = $GLOBALS['TYPO3_DB']->sqlErrorMessage();
 		if ($error) {
 			throw new \RuntimeException('TYPO3\\CMS\\Scheduler\\Task\\TableGarbageCollectionTask failed for table ' . $this->table . ' with error: ' . $error, 1308255491);
 		}

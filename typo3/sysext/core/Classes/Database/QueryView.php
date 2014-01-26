@@ -196,7 +196,7 @@ class QueryView {
 				$qCount = $GLOBALS['TYPO3_DB']->SELECTquery('count(*)', $qGen->table, $qString . BackendUtility::deleteClause($qGen->table));
 				$qSelect = $qGen->getSelectQuery($qString);
 				$res = @$GLOBALS['TYPO3_DB']->sql_query($qCount);
-				if (!$GLOBALS['TYPO3_DB']->sql_error()) {
+				if (!$GLOBALS['TYPO3_DB']->sqlErrorMessage()) {
 					$GLOBALS['TYPO3_DB']->sql_free_result($res);
 					$dA = array();
 					$dA['t2_data'] = serialize(array(
@@ -357,8 +357,8 @@ class QueryView {
 					$output .= $GLOBALS['SOBE']->doc->section('SQL query', $this->tableWrap(htmlspecialchars($qExplain)), 0, 1);
 				}
 				$res = @$GLOBALS['TYPO3_DB']->sql_query($qExplain);
-				if ($GLOBALS['TYPO3_DB']->sql_error()) {
-					$out = '<BR><strong>Error:</strong><BR><font color="red"><strong>' . $GLOBALS['TYPO3_DB']->sql_error() . '</strong></font>';
+				if ($GLOBALS['TYPO3_DB']->sqlErrorMessage()) {
+					$out = '<BR><strong>Error:</strong><BR><font color="red"><strong>' . $GLOBALS['TYPO3_DB']->sqlErrorMessage() . '</strong></font>';
 					$output .= $GLOBALS['SOBE']->doc->section('SQL error', $out, 0, 1);
 				} else {
 					$cPR = $this->getQueryResultCode($mQ, $res, $qGen->table);

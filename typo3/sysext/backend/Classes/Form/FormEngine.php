@@ -5038,8 +5038,8 @@ TBE_EDITOR.customEvalFunctions[\'' . $evalData . '\'] = function(value) {
 		// Exec query:
 		$res = BackendUtility::exec_foreign_table_where_query($fieldValue, $field, $TSconfig, $pF);
 		// Perform error test
-		if ($GLOBALS['TYPO3_DB']->sql_error()) {
-			$msg = htmlspecialchars($GLOBALS['TYPO3_DB']->sql_error());
+		if ($GLOBALS['TYPO3_DB']->sqlErrorMessage()) {
+			$msg = htmlspecialchars($GLOBALS['TYPO3_DB']->sqlErrorMessage());
 			$msg .= '<br />' . LF;
 			$msg .= $this->sL('LLL:EXT:lang/locallang_core.xlf:error.database_schema_mismatch');
 			$msgTitle = $this->sL('LLL:EXT:lang/locallang_core.xlf:error.database_schema_mismatch_title');
