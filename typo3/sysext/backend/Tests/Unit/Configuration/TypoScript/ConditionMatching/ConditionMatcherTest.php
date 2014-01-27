@@ -23,6 +23,7 @@ namespace TYPO3\CMS\Backend\Tests\Unit\Configuration\TypoScript\ConditionMatchin
  *
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
+use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 
 /**
  * Testcase for class \TYPO3\CMS\Backend\Configuration\TypoScript\ConditionMatching\ConditionMatcher.

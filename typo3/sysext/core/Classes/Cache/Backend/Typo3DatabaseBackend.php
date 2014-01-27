@@ -265,8 +265,8 @@ class Typo3DatabaseBackend extends \TYPO3\CMS\Core\Cache\Backend\AbstractBackend
 	 */
 	public function flush() {
 		$this->throwExceptionIfFrontendDoesNotExist();
-		$GLOBALS['TYPO3_DB']->exec_TRUNCATEquery($this->cacheTable);
-		$GLOBALS['TYPO3_DB']->exec_TRUNCATEquery($this->tagsTable);
+		$GLOBALS['TYPO3_DB']->executeTruncateQuery($this->cacheTable);
+		$GLOBALS['TYPO3_DB']->executeTruncateQuery($this->tagsTable);
 	}
 
 	/**

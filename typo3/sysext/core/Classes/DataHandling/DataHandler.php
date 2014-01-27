@@ -7027,14 +7027,14 @@ class DataHandler {
 					// Clear cache group "all" of caching framework caches
 					$GLOBALS['typo3CacheManager']->flushCachesInGroup('all');
 					if (\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::isLoaded('cms')) {
-						$GLOBALS['TYPO3_DB']->exec_TRUNCATEquery('cache_treelist');
+						$GLOBALS['TYPO3_DB']->executeTruncateQuery('cache_treelist');
 					}
 					// Clearing additional cache tables:
 					if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['clearAllCache_additionalTables'])) {
 						foreach ($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['clearAllCache_additionalTables'] as $tableName) {
 							GeneralUtility::deprecationLog('Hook clearAllCache_additionalTables in DataHandler is deprecated in 6.2 and will be removed two versions later. Use the caching framework with database backend instead.');
 							if (!preg_match('/[^[:alnum:]_]/', $tableName) && substr($tableName, -5) === 'cache') {
-								$GLOBALS['TYPO3_DB']->exec_TRUNCATEquery($tableName);
+								$GLOBALS['TYPO3_DB']->executeTruncateQuery($tableName);
 							} else {
 								throw new \RuntimeException('TYPO3 Fatal Error: Trying to flush table "' . $tableName . '" with "Clear All Cache"', 1270853922);
 							}

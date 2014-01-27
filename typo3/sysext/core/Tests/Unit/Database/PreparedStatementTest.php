@@ -47,6 +47,12 @@ class PreparedStatementTest extends \TYPO3\CMS\Core\Tests\UnitTestCase {
 		$this->databaseStub = $this->setUpAndReturnDatabaseStub();
 	}
 
+	protected function tearDown() {
+		if (ExtensionManagementUtility::isLoaded('doctrine_dbal')) {
+			$this->databaseStub->getDatabaseHandle()->close();
+		}
+	}
+
 	//////////////////////
 	// Utility functions
 	//////////////////////

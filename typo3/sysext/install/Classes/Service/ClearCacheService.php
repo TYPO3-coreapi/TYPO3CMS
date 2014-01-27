@@ -69,7 +69,7 @@ class ClearCacheService {
 		foreach ($tables as $table) {
 			$tableName = $table['Name'];
 			if (substr($tableName, 0, 3) === 'cf_') {
-				$database->exec_TRUNCATEquery($tableName);
+				$database->executeTruncateQuery($tableName);
 			}
 		}
 

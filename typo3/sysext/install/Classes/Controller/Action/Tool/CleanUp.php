@@ -141,7 +141,7 @@ class CleanUp extends Action\AbstractAction implements Action\ActionInterface {
 		$database = $this->getDatabase();
 		foreach ($this->postValues['values'] as $tableName => $selected) {
 			if ($selected == 1) {
-				$database->exec_TRUNCATEquery($tableName);
+				$database->executeTruncateQuery($tableName);
 				$clearedTables[] = $tableName;
 			}
 		}

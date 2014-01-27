@@ -291,7 +291,7 @@ class Helper implements \TYPO3\CMS\Core\SingletonInterface {
 				// Use straight query as extbase "remove" is too slow here
 				// This truncates the whole table. It would be more correct to remove only rows of a specific
 				// repository, but multiple repository handling is not implemented, and truncate is quicker.
-				$this->getDatabaseConnection()->exec_TRUNCATEquery('tx_extensionmanager_domain_model_extension');
+				$this->getDatabaseConnection()->executeTruncateQuery('tx_extensionmanager_domain_model_extension');
 			}
 			// no further problems - start of import process
 			if ($updateNecessity === 0) {

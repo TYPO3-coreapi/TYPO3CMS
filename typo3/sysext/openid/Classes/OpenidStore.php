@@ -164,8 +164,8 @@ class OpenidStore extends \Auth_OpenID_OpenIDStore {
 	 * @return void
 	 */
 	public function reset() {
-		$this->databaseConnection->exec_TRUNCATEquery(self::ASSOCIATION_TABLE_NAME);
-		$this->databaseConnection->exec_TRUNCATEquery(self::NONCE_TABLE_NAME);
+		$this->databaseConnection->executeTruncateQuery(self::ASSOCIATION_TABLE_NAME);
+		$this->databaseConnection->executeTruncateQuery(self::NONCE_TABLE_NAME);
 	}
 
 	/**
