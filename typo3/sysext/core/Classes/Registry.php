@@ -108,7 +108,13 @@ class Registry implements \TYPO3\CMS\Core\SingletonInterface {
 	 */
 	public function remove($namespace, $key) {
 		$this->validateNamespace($namespace);
-		$GLOBALS['TYPO3_DB']->exec_DELETEquery('sys_registry', 'entry_namespace = ' . $GLOBALS['TYPO3_DB']->fullQuoteStr($namespace, 'sys_registry') . ' AND entry_key = ' . $GLOBALS['TYPO3_DB']->fullQuoteStr($key, 'sys_registry'));
+		$GLOBALS['TYPO3_DB']->executeDeleteQuery(
+				'sys_registry',
+				array(
+					'entry_namespace' => $namespace,
+					'entry_key'       => $key
+				)
+		);
 		unset($this->entries[$namespace][$key]);
 	}
 
@@ -121,7 +127,7 @@ class Registry implements \TYPO3\CMS\Core\SingletonInterface {
 	 */
 	public function removeAllByNamespace($namespace) {
 		$this->validateNamespace($namespace);
-		$GLOBALS['TYPO3_DB']->exec_DELETEquery('sys_registry', 'entry_namespace = ' . $GLOBALS['TYPO3_DB']->fullQuoteStr($namespace, 'sys_registry'));
+		$GLOBALS['TYPO3_DB']->executeDeleteQuery('sys_registry', array('entry_namespace' => $namespace));
 		unset($this->entries[$namespace]);
 	}
 

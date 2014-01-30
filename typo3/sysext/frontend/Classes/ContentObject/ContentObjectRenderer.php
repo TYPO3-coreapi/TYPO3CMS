@@ -7026,11 +7026,13 @@ class ContentObjectRenderer {
 	 ***********************************************/
 	/**
 	 * Returns an UPDATE/DELETE sql query which will "delete" the record.
-	 * If the $GLOBALS['TCA'] config for the table tells us to NOT "physically" delete the record but rather set the "deleted" field to "1" then an UPDATE query is returned doing just that. Otherwise it truely is a DELETE query.
+	 * If the $GLOBALS['TCA'] config for the table tells us to NOT "physically" delete the record but rather set the
+	 * "deleted" field to "1" then an UPDATE query is returned doing just that. Otherwise it truely is a DELETE query.
 	 *
 	 * @param string $table The table name, should be in $GLOBALS['TCA']
 	 * @param integer $uid The UID of the record from $table which we are going to delete
 	 * @param boolean $doExec If set, the query is executed. IT'S HIGHLY RECOMMENDED TO USE THIS FLAG to execute the query directly!!!
+	 *
 	 * @return string The query, ready to execute unless $doExec was TRUE in which case the return value is FALSE.
 	 * @see DBgetUpdate(), DBgetInsert(), user_feAdmin
 	 * @todo Define visibility
@@ -7052,9 +7054,16 @@ class ContentObjectRenderer {
 				}
 			} else {
 				if ($doExec) {
+<<<<<<< HEAD
 					return $GLOBALS['TYPO3_DB']->exec_DELETEquery($table, 'uid=' . $uid);
 				} else {
 					return $GLOBALS['TYPO3_DB']->DELETEquery($table, 'uid=' . $uid);
+=======
+					return $GLOBALS['TYPO3_DB']->executeDeleteQuery($table, array('uid' => intval($uid)));
+				} else {
+					// TODO: Find a way to create DELETE queries
+					return $GLOBALS['TYPO3_DB']->DELETEquery($table, 'uid=' . intval($uid));
+>>>>>>> [WIP] Make usage of the Doctrine DELETE methods
 				}
 			}
 		}

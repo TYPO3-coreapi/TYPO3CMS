@@ -626,6 +626,7 @@ class RelationHandler {
 						}
 					}
 				}
+				// TODO: Create a Doctrine alike $deletedAddWhereClause
 				$deleteAddWhere = ' AND (' . implode(' OR ', $removeClauses) . ')';
 				$where = $uidLocal_field . '=' . (int)$uid . $deleteAddWhere . $additionalWhere_tablenames . $additionalWhere;
 				$GLOBALS['TYPO3_DB']->exec_DELETEquery($MM_tableName, $where);

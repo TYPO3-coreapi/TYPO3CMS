@@ -81,6 +81,15 @@ class ReferenceIndex {
 	public $hashVersion = 1;
 
 	/**
+	 * @var \TYPO3\DoctrineDbal\Database\DatabaseConnection
+	 */
+	protected $db;
+
+	public function __construct() {
+		$this->db = $GLOBALS['TYPO3_DB'];
+	}
+
+	/**
 	 * Call this function to update the sys_refindex table for a record (even one just deleted)
 	 * NOTICE: Currently, references updated for a deleted-flagged record will not include those from within flexform fields in some cases where the data structure is defined by another record since the resolving process ignores deleted records! This will also result in bad cleaning up in tcemain I think... Anyway, thats the story of flexforms; as long as the DS can change, lots of references can get lost in no time.
 	 *
@@ -135,7 +144,11 @@ class ReferenceIndex {
 				$result['deletedNodes'] = count($hashList);
 				$result['deletedNodes_hashList'] = implode(',', $hashList);
 				if (!$testOnly) {
-					$GLOBALS['TYPO3_DB']->exec_DELETEquery('sys_refindex', 'hash IN (' . implode(',', $GLOBALS['TYPO3_DB']->fullQuoteArray($hashList, 'sys_refindex')) . ')');
+					//$GLOBALS['TYPO3_DB']->exec_DELETEquery('sys_refindex', 'hash IN (' . implode(',', $GLOBALS['TYPO3_DB']->fullQuoteArray($hashList, 'sys_refindex')) . ')');
+					$this->db->getQueryBuilder()
+							->delete('sys_refindex')
+							->where($this->db->getQueryBuilder()->expr()->in('hash', $hashList))
+							->execute();
 				}
 			}
 		}
@@ -894,7 +907,15 @@ class ReferenceIndex {
 					echo $Err . LF;
 				}
 				if (!$testOnly) {
-					$GLOBALS['TYPO3_DB']->exec_DELETEquery('sys_refindex', $where);
+					$GLOBALS['TYPO3_DB']->getQueryBuilder()
+						->delete('sys_refindex')
+						->where(
+								$GLOBALS['TYPO3_DB']->getQueryBuilder()->expr()->and(
+									$GLOBALS['TYPO3_DB']->getQueryBuilder()->expr()->eq('tablename', $tableName),
+									$GLOBALS['TYPO3_DB']->getQueryBuilder()->expr()->notIn('recuid', $uidList)
+								)
+							)
+						->execute();
 				}
 			}
 		}
@@ -908,7 +929,10 @@ class ReferenceIndex {
 				echo $Err . LF;
 			}
 			if (!$testOnly) {
-				$GLOBALS['TYPO3_DB']->exec_DELETEquery('sys_refindex', $where);
+				$this->db->getQueryBuilder()
+					->delete('sys_refindex')
+					->where($this->db->getQueryBuilder()->expr()->notIn('tablename', $tableName))
+					->execute();
 			}
 		}
 		$testedHowMuch = $recCount . ' records from ' . $tableCount . ' tables were checked/updated.' . LF;

@@ -403,7 +403,7 @@ class ShortcutToolbarItem implements \TYPO3\CMS\Backend\Toolbar\ToolbarItemHookI
 		$fullShortcut = $this->getShortcutById($shortcutId);
 		$ajaxReturn = 'failed';
 		if ($fullShortcut['raw']['userid'] == $GLOBALS['BE_USER']->user['uid']) {
-			$GLOBALS['TYPO3_DB']->exec_DELETEquery('sys_be_shortcuts', 'uid = ' . $shortcutId);
+			$GLOBALS['TYPO3_DB']->executeDeleteQuery('sys_be_shortcuts', array('uid' => $shortcutId));
 			if ($GLOBALS['TYPO3_DB']->sql_affected_rows() == 1) {
 				$ajaxReturn = 'deleted';
 			}

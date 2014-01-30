@@ -2365,7 +2365,7 @@ class GraphicalFunctions {
 		if (is_array($cachedImageDimensions)) {
 			if ($cachedImageDimensions['md5hash'] != $md5Hash) {
 				// File has changed, delete the row
-				$GLOBALS['TYPO3_DB']->exec_DELETEquery('cache_imagesizes', 'md5filename=' . $GLOBALS['TYPO3_DB']->fullQuoteStr($cachedImageDimensions['md5filename'], 'cache_imagesizes'));
+				$GLOBALS['TYPO3_DB']->executeDeleteQuery('cache_imagesizes', array('md5filename' => $cachedImageDimensions['md5filename']));
 			} else {
 				preg_match('/([^\\.]*)$/', $imageFile, $imageExtension);
 				$result = array(
@@ -2539,7 +2539,7 @@ class GraphicalFunctions {
 						'filename' => $output,
 						'orig_filename' => $orig
 					);
-					$GLOBALS['TYPO3_DB']->exec_DELETEquery('cache_typo3temp_log', 'md5hash=' . $GLOBALS['TYPO3_DB']->fullQuoteStr($md5Hash, 'cache_typo3temp_log'));
+					$GLOBALS['TYPO3_DB']->executeDeleteQuery('cache_typo3temp_log', array('md5hash' => $md5Hash));
 					$GLOBALS['TYPO3_DB']->exec_INSERTquery('cache_typo3temp_log', $insertFields);
 					if (is_object($GLOBALS['TT'])) {
 						$GLOBALS['TT']->setTSlogMessage('typo3temp_log: The row did not exist, so a new is written and file is being processed: ' . $output);

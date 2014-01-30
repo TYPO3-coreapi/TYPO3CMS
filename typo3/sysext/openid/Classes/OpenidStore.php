@@ -41,7 +41,7 @@ class OpenidStore extends \Auth_OpenID_OpenIDStore {
 	const NONCE_STORAGE_TIME = 864000;
 
 	/**
-	 * @var \TYPO3\CMS\Core\Database\DatabaseConnection
+	 * @var \TYPO3\DoctrineDbal\Database\DatabaseConnection
 	 */
 	protected $databaseConnection;
 
@@ -76,8 +76,12 @@ class OpenidStore extends \Auth_OpenID_OpenIDStore {
 	 * @return integer A number of removed associations
 	 */
 	public function cleanupAssociations() {
-		$where = sprintf('expires<=%d', time());
-		$this->databaseConnection->exec_DELETEquery(self::ASSOCIATION_TABLE_NAME, $where);
+		$this->databaseConnection->getQueryBuilder()
+				->delete(self::ASSOCIATION_TABLE_NAME)
+				->where('expires < :expires')
+				->setParameter(':expires', time())
+				->execute();
+
 		return $this->databaseConnection->sql_affected_rows();
 	}
 
@@ -118,8 +122,13 @@ class OpenidStore extends \Auth_OpenID_OpenIDStore {
 	 * @return boolean TRUE if the association existed
 	 */
 	public function removeAssociation($serverUrl, $handle) {
-		$where = sprintf('server_url=%s AND assoc_handle=%s', $this->databaseConnection->fullQuoteStr($serverUrl, self::ASSOCIATION_TABLE_NAME), $this->databaseConnection->fullQuoteStr($handle, self::ASSOCIATION_TABLE_NAME));
-		$this->databaseConnection->exec_DELETEquery(self::ASSOCIATION_TABLE_NAME, $where);
+		$this->databaseConnection->executeDeleteQuery(
+			self::ASSOCIATION_TABLE_NAME,
+			array(
+				'server_url' => $serverUrl,
+				'assoc_handle' => $handle
+			)
+		);
 		$deletedCount = $this->databaseConnection->sql_affected_rows();
 		return $deletedCount > 0;
 	}
@@ -130,8 +139,11 @@ class OpenidStore extends \Auth_OpenID_OpenIDStore {
 	 * @return void
 	 */
 	public function cleanupNonces() {
-		$where = sprintf('crdate<%d', time() - self::NONCE_STORAGE_TIME);
-		$this->databaseConnection->exec_DELETEquery(self::NONCE_TABLE_NAME, $where);
+		$this->databaseConnection->getQueryBuilder()
+				->delete(self::NONCE_TABLE_NAME)
+				->where('crdate < :crdate')
+				->setParameter(':crdate', time() - self::NONCE_STORAGE_TIME)
+				->execute();
 	}
 
 	/**

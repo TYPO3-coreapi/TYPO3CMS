@@ -205,7 +205,7 @@ class Scheduler implements \TYPO3\CMS\Core\SingletonInterface {
 	public function removeTask(\TYPO3\CMS\Scheduler\Task\AbstractTask $task) {
 		$taskUid = $task->getTaskUid();
 		if (!empty($taskUid)) {
-			$result = $GLOBALS['TYPO3_DB']->exec_DELETEquery('tx_scheduler_task', 'uid = ' . $taskUid);
+			$result = $GLOBALS['TYPO3_DB']->executeDeleteQuery('tx_scheduler_task', array('uid' => $taskUid));
 		} else {
 			$result = FALSE;
 		}

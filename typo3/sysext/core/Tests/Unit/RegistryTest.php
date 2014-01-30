@@ -23,6 +23,7 @@ namespace TYPO3\CMS\Core\Tests\Unit;
  *
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
+use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 
 /**
  * Testcase for TYPO3\CMS\Core\Registry
@@ -40,7 +41,11 @@ class RegistryTest extends \TYPO3\CMS\Core\Tests\UnitTestCase {
 	 * Sets up this testcase
 	 */
 	public function setUp() {
-		$GLOBALS['TYPO3_DB'] = $this->getMock('TYPO3\\CMS\\Core\\Database\\DatabaseConnection', array());
+		if (ExtensionManagementUtility::isLoaded('doctrine_dbal')) {
+			$GLOBALS['TYPO3_DB'] = $this->getMock('TYPO3\\DoctrineDbal\\Database\\DatabaseConnection', array());
+		} else {
+			$GLOBALS['TYPO3_DB'] = $this->getMock('TYPO3\\CMS\\Core\\Database\\DatabaseConnection', array());
+		}
 		$GLOBALS['TYPO3_DB']->expects($this->any())->method('fullQuoteStr')->will($this->onConsecutiveCalls('\'tx_phpunit\'', '\'someKey\'', '\'tx_phpunit\'', '\'someKey\''));
 		$this->registry = new \TYPO3\CMS\Core\Registry();
 	}
@@ -173,7 +178,7 @@ class RegistryTest extends \TYPO3\CMS\Core\Tests\UnitTestCase {
 	 * @test
 	 */
 	public function removeReallyRemovesTheEntryFromTheDatabase() {
-		$GLOBALS['TYPO3_DB']->expects($this->once())->method('exec_DELETEquery')->with('sys_registry', 'entry_namespace = \'tx_phpunit\' AND entry_key = \'someKey\'');
+		$GLOBALS['TYPO3_DB']->expects($this->once())->method('executeDeleteQuery')->with('sys_registry', array('entry_namespace' => 'tx_phpunit', 'entry_key' => 'someKey'));
 		$this->registry->remove('tx_phpunit', 'someKey');
 	}
 
@@ -203,7 +208,7 @@ class RegistryTest extends \TYPO3\CMS\Core\Tests\UnitTestCase {
 	 * @test
 	 */
 	public function removeAllByNamespaceReallyRemovesAllEntriesOfTheSpecifiedNamespaceFromTheDatabase() {
-		$GLOBALS['TYPO3_DB']->expects($this->once())->method('exec_DELETEquery')->with('sys_registry', 'entry_namespace = \'tx_phpunit\'');
+		$GLOBALS['TYPO3_DB']->expects($this->once())->method('executeDeleteQuery')->with('sys_registry', array('entry_namespace' => 'tx_phpunit'));
 		$this->registry->removeAllByNamespace('tx_phpunit');
 	}
 

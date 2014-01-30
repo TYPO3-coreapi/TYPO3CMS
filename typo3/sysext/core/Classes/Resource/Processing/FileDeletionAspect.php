@@ -94,9 +94,12 @@ class FileDeletionAspect {
 			$this->getMetaDataRepository()->removeByFileUid($fileObject->getUid());
 
 			// remove all references
-			$this->getDatabase()->exec_DELETEquery(
+			$this->getDatabase()->executeDeleteQuery(
 				'sys_file_reference',
+				array(
 				'uid_local=' . (int)$fileObject->getUid() . ' AND table_local = \'sys_file\''
+					'table_local' => 'sysfile'
+				)
 			);
 
 		} elseif ($fileObject instanceof ProcessedFile) {

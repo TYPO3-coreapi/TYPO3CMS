@@ -110,6 +110,11 @@ class FrontendUserAuthentication extends \TYPO3\CMS\Core\Authentication\Abstract
 	protected $sessionDataTimestamp = NULL;
 
 	/**
+	 * @var \TYPO3\DoctrineDbal\Database\DatabaseConnection
+	 */
+	protected $db;
+
+	/**
 	 * Default constructor.
 	 */
 	public function __construct() {
@@ -141,6 +146,7 @@ class FrontendUserAuthentication extends \TYPO3\CMS\Core\Authentication\Abstract
 		$this->sendNoCacheHeaders = FALSE;
 		$this->getFallBack = TRUE;
 		$this->getMethodEnabled = TRUE;
+		$this->db = $GLOBALS['TYPO3_DB'];
 	}
 
 	/**

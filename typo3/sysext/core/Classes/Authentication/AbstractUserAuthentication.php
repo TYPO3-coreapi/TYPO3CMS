@@ -355,6 +355,13 @@ abstract class AbstractUserAuthentication {
 	public $writeDevLog = FALSE;
 
 	/**
+	 * The database connection class
+	 *
+	 * @var \TYPO3\DoctrineDbal\Database\DatabaseConnection $db
+	 */
+	protected $db;
+
+	/**
 	 * Starts a user session
 	 * Typical configurations will:
 	 * a) check if session cookie was set and if not, set one,
@@ -367,6 +374,7 @@ abstract class AbstractUserAuthentication {
 	 * @todo Define visibility
 	 */
 	public function start() {
+		$this->db = $GLOBALS['TYPO3_DB'];
 		// Backend or frontend login - used for auth services
 		if (empty($this->loginType)) {
 			throw new \TYPO3\CMS\Core\Exception('No loginType defined, should be set explicitly by subclass');
@@ -859,10 +867,11 @@ abstract class AbstractUserAuthentication {
 			GeneralUtility::devLog('Create session ses_id = ' . $this->id, 'TYPO3\\CMS\\Core\\Authentication\\AbstractUserAuthentication');
 		}
 		// Delete session entry first
-		$GLOBALS['TYPO3_DB']->exec_DELETEquery(
+		$GLOBALS['TYPO3_DB']->executeDeleteQuery(
 			$this->session_table,
-			'ses_id = ' . $GLOBALS['TYPO3_DB']->fullQuoteStr($this->id, $this->session_table)
-				. ' AND ses_name = ' . $GLOBALS['TYPO3_DB']->fullQuoteStr($this->name, $this->session_table)
+			array(
+				'ses_id' => $this->id,
+				'ses_name' => $this->name)
 		);
 		// Re-create session entry
 		$insertFields = $this->getNewSessionRecord($tempuser);
@@ -974,8 +983,15 @@ abstract class AbstractUserAuthentication {
 				}
 			}
 		}
-		$GLOBALS['TYPO3_DB']->exec_DELETEquery($this->session_table, 'ses_id = ' . $GLOBALS['TYPO3_DB']->fullQuoteStr($this->id, $this->session_table) . '
-						AND ses_name = ' . $GLOBALS['TYPO3_DB']->fullQuoteStr($this->name, $this->session_table));
+
+		$GLOBALS['TYPO3_DB']->executeDeleteQuery(
+			$this->session_table,
+			array(
+				'ses_id' => $this->id,
+				'ses_name' => $this->name
+			)
+		);
+
 		$this->user = '';
 		// Hook for post-processing the logoff() method, requested and implemented by andreas.otto@dkd.de:
 		if (is_array($GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_userauth.php']['logoff_post_processing'])) {

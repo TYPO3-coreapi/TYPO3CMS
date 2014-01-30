@@ -83,11 +83,17 @@ abstract class AbstractTask {
 	protected $taskGroup;
 
 	/**
+	 * @var \TYPO3\DoctrineDbal\Database\DatabaseConnection
+	 */
+	protected $db;
+
+	/**
 	 * Constructor
 	 */
 	public function __construct() {
 		$this->setScheduler();
 		$this->execution = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Scheduler\\Execution');
+		$this->db = $GLOBALS['TYPO3_DB'];
 	}
 
 	/**
