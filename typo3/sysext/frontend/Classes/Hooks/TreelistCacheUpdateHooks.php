@@ -240,7 +240,7 @@ class TreelistCacheUpdateHooks {
 		}
 		if (!empty($rootlineIds)) {
 			$rootlineIdsImploded = implode(',', $rootlineIds);
-			$GLOBALS['TYPO3_DB']->getQueryBuilder()
+			$GLOBALS['TYPO3_DB']->query()
 					->delete('cache_treelist')
 					->where('pid IN (?1)')
 					->setParameter(1, $rootlineIdsImploded)

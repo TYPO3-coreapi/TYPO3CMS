@@ -76,7 +76,7 @@ class OpenidStore extends \Auth_OpenID_OpenIDStore {
 	 * @return integer A number of removed associations
 	 */
 	public function cleanupAssociations() {
-		$this->databaseConnection->getQueryBuilder()
+		$this->databaseConnection->query()
 				->delete(self::ASSOCIATION_TABLE_NAME)
 				->where('expires < :expires')
 				->setParameter(':expires', time())
@@ -139,7 +139,7 @@ class OpenidStore extends \Auth_OpenID_OpenIDStore {
 	 * @return void
 	 */
 	public function cleanupNonces() {
-		$this->databaseConnection->getQueryBuilder()
+		$this->databaseConnection->query()
 				->delete(self::NONCE_TABLE_NAME)
 				->where('crdate < :crdate')
 				->setParameter(':crdate', time() - self::NONCE_STORAGE_TIME)

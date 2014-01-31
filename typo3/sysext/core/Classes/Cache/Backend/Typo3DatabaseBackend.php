@@ -291,16 +291,16 @@ class Typo3DatabaseBackend extends \TYPO3\CMS\Core\Cache\Backend\AbstractBackend
 		$GLOBALS['TYPO3_DB']->sql_free_result($tagsEntryIdentifierRowsResource);
 		// Delete tag rows connected to expired cache entries
 		if (count($tagsEntryIdentifiers)) {
-			$this->db->getQueryBuilder()
+			$this->db->query()
 						->delete($this->tagsTable)
-						->where($this->db->getQueryBuilder()->expr()->in('identifier', $tagsEntryIdentifiers))
+						->where($this->db->query()->expr()->in('identifier', $tagsEntryIdentifiers))
 						->execute();
 
 		}
 		// Delete expired cache rows
 		$GLOBALS['TYPO3_DB']->exec_DELETEquery($this->cacheTable, $this->expiredStatement);
 		//TODO Find a way to rewrite the $this->expiredStatement in a Doctrine like way
-//		$this->db->getQueryBuilder()
+//		$this->db->query()
 //					->delete($this->cacheTable)
 //					->where($this->expiredStatementDoctrineReady[0] )
 //					->setParameter(1, implode(', ', $tagsEntryIdentifiers))
@@ -398,13 +398,13 @@ class Typo3DatabaseBackend extends \TYPO3\CMS\Core\Cache\Backend\AbstractBackend
 		}
 		$GLOBALS['TYPO3_DB']->sql_free_result($cacheEntryIdentifierRowsResource);
 		if (count($cacheEntryIdentifiers)) {
-			$this->db->getQueryBuilder()
+			$this->db->query()
 						->delete($this->cacheTable)
-						->where($this->db->getQueryBuilder()->expr()->in('identifier', $cacheEntryIdentifiers))
+						->where($this->db->query()->expr()->in('identifier', $cacheEntryIdentifiers))
 						->execute();
-			$this->db->getQueryBuilder()
+			$this->db->query()
 						->delete($this->tagsTable)
-						->where($this->db->getQueryBuilder()->expr()->in('identifier', $cacheEntryIdentifiers))
+						->where($this->db->query()->expr()->in('identifier', $cacheEntryIdentifiers))
 						->execute();
 		}
 	}

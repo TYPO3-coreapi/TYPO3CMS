@@ -689,10 +689,10 @@ class CrawlerHook {
 			}
 			$tables = explode(',', 'index_debug,index_fulltext,index_grlist,index_phash,index_rel,index_section');
 			foreach ($tables as $table) {
-				$GLOBALS['TYPO3_DB']->getQueryBuilder()
+				$GLOBALS['TYPO3_DB']->query()
 						->delete($table)
 						->where(
-								$GLOBALS['TYPO3_DB']->getQueryBuilder()->expr()->in(
+								$GLOBALS['TYPO3_DB']->query()->expr()->in(
 										'phash',
 										$GLOBALS['TYPO3_DB']->cleanIntArray($pHashesToDelete))
 						)
