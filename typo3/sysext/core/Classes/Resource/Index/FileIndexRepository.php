@@ -351,7 +351,7 @@ class FileIndexRepository implements SingletonInterface {
 	 * @return void
 	 */
 	public function remove($fileUid) {
-		$this->getDatabase()->exec_DELETEquery($this->table, 'uid=' . (int)$fileUid);
+		$this->getDatabase()->executeDeleteQuery($this->table, array('uid' => (int)$fileUid));
 		$this->emitRecordDeleted($fileUid);
 	}
 

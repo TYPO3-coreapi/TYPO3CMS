@@ -82,6 +82,11 @@ class Typo3DatabaseBackend extends \TYPO3\CMS\Core\Cache\Backend\AbstractBackend
 	protected $expiredStatement;
 
 	/**
+	 * @var
+	 */
+	protected $expiredStatementDoctrine;
+
+	/**
 	 * @var string Data and tags table name comma separated
 	 */
 	protected $tableList;
@@ -111,13 +116,15 @@ class Typo3DatabaseBackend extends \TYPO3\CMS\Core\Cache\Backend\AbstractBackend
 	 * @return void
 	 */
 	protected function initializeCommonReferences() {
-		$this->identifierField = $this->cacheTable . '.identifier';
-		$this->expiresField = $this->cacheTable . '.expires';
+		$this->identifierField = $this->cacheTable . '.identifier';		$this->expiresField = $this->cacheTable . '.expires';
 		$this->maximumLifetime = self::FAKED_UNLIMITED_EXPIRE - $GLOBALS['EXEC_TIME'];
 		$this->tableList = $this->cacheTable . ', ' . $this->tagsTable;
 		$this->tableJoin = $this->identifierField . ' = ' . $this->tagsTable . '.identifier';
 		$this->expiredStatement = $this->expiresField . ' < ' . $GLOBALS['EXEC_TIME'];
 		$this->notExpiredStatement = $this->expiresField . ' >= ' . $GLOBALS['EXEC_TIME'];
+		$q = $this->db->createDeleteQuery();
+		$expr = $q->expr;
+		$this->expiredStatementDoctrine = $expr->lessThan($this->expiresField, ':execTime');
 	}
 
 	/**
@@ -291,22 +298,16 @@ class Typo3DatabaseBackend extends \TYPO3\CMS\Core\Cache\Backend\AbstractBackend
 		$GLOBALS['TYPO3_DB']->sql_free_result($tagsEntryIdentifierRowsResource);
 		// Delete tag rows connected to expired cache entries
 		if (count($tagsEntryIdentifiers)) {
-			$this->db->query()
-						->delete($this->tagsTable)
-						->where($this->db->query()->expr()->in('identifier', $tagsEntryIdentifiers))
+			$query = $this->db->createDeleteQuery();
+			$query->delete($this->tagsTable)
+						->where($query->expr->in('identifier', $tagsEntryIdentifiers))
 						->execute();
-
 		}
 		// Delete expired cache rows
-		$GLOBALS['TYPO3_DB']->exec_DELETEquery($this->cacheTable, $this->expiredStatement);
-		//TODO Find a way to rewrite the $this->expiredStatement in a Doctrine like way
-//		$this->db->query()
-//					->delete($this->cacheTable)
-//					->where($this->expiredStatementDoctrineReady[0] )
-//					->setParameter(1, implode(', ', $tagsEntryIdentifiers))
-//					->execute();
-//		$this->expiredStatementDoctrineReady = array($this->expiresField, '<', $GLOBALS['EXEC_TIME']);
-
+		$query = $this->db->createDeleteQuery();
+		$query->delete($this->cacheTable)->where($this->expiredStatementDoctrine);
+		$query->bindValue($GLOBALS['EXEC_TIME'], ':execTime');
+		$query->execute();
 	}
 
 	/**
@@ -398,15 +399,14 @@ class Typo3DatabaseBackend extends \TYPO3\CMS\Core\Cache\Backend\AbstractBackend
 		}
 		$GLOBALS['TYPO3_DB']->sql_free_result($cacheEntryIdentifierRowsResource);
 		if (count($cacheEntryIdentifiers)) {
-			$this->db->query()
-						->delete($this->cacheTable)
-						->where($this->db->query()->expr()->in('identifier', $cacheEntryIdentifiers))
-						->execute();
-			$this->db->query()
-						->delete($this->tagsTable)
-						->where($this->db->query()->expr()->in('identifier', $cacheEntryIdentifiers))
-						->execute();
+			$query = $this->db->createDeleteQuery();
+			$in = $query->expr->in('identifier', $cacheEntryIdentifiers);
+			$query->delete($this->cacheTable)->where($in);
+			$query->execute();
+
+			$query = $this->db->createDeleteQuery();
+			$query->delete($this->tagsTable)->where($in);
+			$query->execute();
 		}
 	}
-
 }

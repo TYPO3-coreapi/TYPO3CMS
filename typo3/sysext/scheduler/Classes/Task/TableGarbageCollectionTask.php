@@ -82,13 +82,18 @@ class TableGarbageCollectionTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask 
 	 * @return boolean TRUE if cleanup was successful
 	 */
 	protected function handleTable($table, array $configuration) {
+		$deleteQuery = $GLOBALS['TYPO3_DB']->createDeleteQuery();
+		$expr = $deleteQuery->expr;
+		$where = array();
+
 		if (!empty($configuration['expireField'])) {
 			$field = $configuration['expireField'];
 			$dateLimit = $GLOBALS['EXEC_TIME'];
 			// If expire field value is 0, do not delete
 			// Expire field = 0 means no expiration
-			// TODO: Find a Doctrine alike way to create this where
-			$where = $field . ' <= \'' . $dateLimit . '\' AND ' . $field . ' > \'0\'';
+			$where[] = $expr->lessThanOrEquals($field, $deleteQuery->bindValue($dateLimit));
+			$where[] = $expr->greaterThan($field, $deleteQuery->bindValue(0));
+
 		} elseif (!empty($configuration['dateField'])) {
 			$field = $configuration['dateField'];
 			if (!$this->allTables) {
@@ -99,12 +104,13 @@ class TableGarbageCollectionTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask 
 				}
 				$deleteTimestamp = strtotime('-' . $configuration['expirePeriod'] . 'days');
 			}
-			// TODO: Find a Doctrine alike way to create this where
-			$where = $configuration['dateField'] . ' < ' . $deleteTimestamp;
+			$where[] = $expr->lessThan($configuration['dateField'], $deleteQuery->bindValue($deleteTimestamp));
 		} else {
 			throw new \RuntimeException('TYPO3\\CMS\\Scheduler\\Task\\TableGarbageCollectionTask misconfiguration: Either expireField or dateField must be defined for table ' . $table, 1308355268);
 		}
-		$GLOBALS['TYPO3_DB']->exec_DELETEquery($table, $where);
+		$deleteQuery->delete($table, $where)->execute();
+
+		//TODO: Handle the error messages with the new Database API
 		$error = $GLOBALS['TYPO3_DB']->sqlErrorMessage();
 		if ($error) {
 			throw new \RuntimeException('TYPO3\\CMS\\Scheduler\\Task\\TableGarbageCollectionTask failed for table ' . $this->table . ' with error: ' . $error, 1308255491);

@@ -999,7 +999,7 @@ class IndexedPagesController extends \TYPO3\CMS\Backend\Module\AbstractFunctionM
 				// Removing old registrations for all tables.
 				$tableArr = explode(',', 'index_phash,index_rel,index_section,index_grlist,index_fulltext,index_debug');
 				foreach ($tableArr as $table) {
-					$GLOBALS['TYPO3_DB']->exec_DELETEquery($table, 'phash=' . (int)$phash);
+					$GLOBALS['TYPO3_DB']->executeDeleteQuery($table, array('phash' => (int)$phash));
 				}
 			}
 		}

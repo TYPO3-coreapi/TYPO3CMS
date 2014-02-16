@@ -95,15 +95,13 @@ class FileDeletionAspect {
 
 			// remove all references
 			$this->getDatabase()->executeDeleteQuery(
-				'sys_file_reference',
-				array(
-				'uid_local=' . (int)$fileObject->getUid() . ' AND table_local = \'sys_file\''
-					'table_local' => 'sysfile'
-				)
-			);
-
+						'sys_file_reference',
+						array(
+							'table_local' => (int)$fileObject->getUid(),
+							'table_local' => 'sys_file'
+						));
 		} elseif ($fileObject instanceof ProcessedFile) {
-			$this->getDatabase()->exec_DELETEquery('sys_file_processedfile', 'uid=' . (int)$fileObject->getUid());
+			$this->getDatabase()->executeDeleteQuery('sys_file_processedfile', array('uid' => (int)$fileObject->getUid()));
 		}
 	}
 

@@ -239,12 +239,8 @@ class TreelistCacheUpdateHooks {
 			}
 		}
 		if (!empty($rootlineIds)) {
-			$rootlineIdsImploded = implode(',', $rootlineIds);
-			$GLOBALS['TYPO3_DB']->query()
-					->delete('cache_treelist')
-					->where('pid IN (?1)')
-					->setParameter(1, $rootlineIdsImploded)
-					->execute();
+			$query = $GLOBALS['TYPO3_DB']->createDeleteQuery();
+			$query->delete('cache_treelist')->where($query->expr->in('pid', $rootlineIds))->execute();
 		}
 	}
 

@@ -76,13 +76,12 @@ class OpenidStore extends \Auth_OpenID_OpenIDStore {
 	 * @return integer A number of removed associations
 	 */
 	public function cleanupAssociations() {
-		$this->databaseConnection->query()
-				->delete(self::ASSOCIATION_TABLE_NAME)
-				->where('expires < :expires')
-				->setParameter(':expires', time())
+		$query = $this->databaseConnection->createDeleteQuery();
+		$query->delete(self::ASSOCIATION_TABLE_NAME)
+				->where($query->expr->lessThan('expires', $query->bindValue(time())))
 				->execute();
 
-		return $this->databaseConnection->sql_affected_rows();
+		return $query->getAffectedRows();
 	}
 
 	/**
@@ -139,10 +138,9 @@ class OpenidStore extends \Auth_OpenID_OpenIDStore {
 	 * @return void
 	 */
 	public function cleanupNonces() {
-		$this->databaseConnection->query()
-				->delete(self::NONCE_TABLE_NAME)
-				->where('crdate < :crdate')
-				->setParameter(':crdate', time() - self::NONCE_STORAGE_TIME)
+		$query = $this->databaseConnection->createDeleteQuery();
+		$query->delete(self::NONCE_TABLE_NAME)
+				->where($query->expr->lessThan('crdate', $query->bindValue(time() - self::NONCE_STORAGE_TIME)))
 				->execute();
 	}
 

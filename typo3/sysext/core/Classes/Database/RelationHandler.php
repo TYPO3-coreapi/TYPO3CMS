@@ -501,6 +501,10 @@ class RelationHandler {
 	 * @todo Define visibility
 	 */
 	public function writeMM($MM_tableName, $uid, $prependTableName = FALSE) {
+		//TODO: Refactor this whole method.
+		$deleteQuery = $GLOBALS['TYPO3_DB']->createDeleteQuery();
+		$expr = $deleteQuery->expr;
+
 		// In case of a reverse relation
 		if ($this->MM_is_foreign) {
 			$uidLocal_field = 'uid_foreign';
@@ -519,10 +523,14 @@ class RelationHandler {
 			$prep = $tableC > 1 || $prependTableName || $this->MM_isMultiTableRelationship ? 1 : 0;
 			$c = 0;
 			$additionalWhere_tablenames = '';
+			$additionalWhere_tablenamesDoctrine = '';
 			if ($this->MM_is_foreign && $prep) {
 				$additionalWhere_tablenames = ' AND tablenames=' . $GLOBALS['TYPO3_DB']->fullQuoteStr($this->currentTable, $MM_tableName);
+
+				$additionalWhere_tablenamesDoctrine = $expr->equals('tablenames', $deleteQuery->bindValue($this->currentTable));
 			}
 			$additionalWhere = '';
+			$additionalWhereDoctrine = '';
 			// Add WHERE clause if configured
 			if ($this->MM_table_where) {
 				$additionalWhere .= LF . str_replace('###THIS_UID###', (int)$uid, $this->MM_table_where);
@@ -604,18 +612,27 @@ class RelationHandler {
 			}
 			// Delete all not-used relations:
 			if (is_array($oldMMs) && count($oldMMs) > 0) {
+
 				$removeClauses = array();
+				$removeClausesDoctrine = array();
 				$updateRefIndex_records = array();
 				foreach ($oldMMs as $oldMM_key => $mmItem) {
 					// If UID field is present, of course we need only use that for deleting.
 					if ($this->MM_hasUidField) {
 						$removeClauses[] = 'uid=' . (int)$oldMMs_inclUid[$oldMM_key][2];
+
+						$removeClausesDoctrine[] = $this->db->expr()->equals('uid', $deleteQuery->bindValue((int)$oldMMs_inclUid[$oldMM_key][2], NULL, \PDO::PARAM_INT));
 					} else {
 						if (is_array($mmItem)) {
 							$removeClauses[] = 'tablenames=' . $GLOBALS['TYPO3_DB']->fullQuoteStr($mmItem[0], $MM_tableName)
 								. ' AND ' . $uidForeign_field . '=' . $mmItem[1];
+
+							$removeClausesDoctrine[] = $deleteQuery->expr()->equals('tablenames', $deleteQuery->bindValue($mmItem[0]));
+							$removeClausesDoctrine[] = $deleteQuery->expr()->equals($uidForeign_field, $deleteQuery->bindValue($mmItem[1]));
 						} else {
 							$removeClauses[] = $uidForeign_field . '=' . $mmItem;
+
+							$removeClausesDoctrine[] = $deleteQuery->expr()->equals($uidForeign_field, $deleteQuery->bindValue($mmItem));
 						}
 					}
 					if ($this->MM_is_foreign) {
@@ -630,6 +647,15 @@ class RelationHandler {
 				$deleteAddWhere = ' AND (' . implode(' OR ', $removeClauses) . ')';
 				$where = $uidLocal_field . '=' . (int)$uid . $deleteAddWhere . $additionalWhere_tablenames . $additionalWhere;
 				$GLOBALS['TYPO3_DB']->exec_DELETEquery($MM_tableName, $where);
+
+				$deleteQuery->delete($MM_tableName)->where(
+						$deleteQuery->expr->logicalAnd(
+							$deleteQuery->expr->equals($uidLocal_field, $deleteQuery->bindValue((int)$uid, NULL, \PDO::PARAM_INT)),
+							$removeClausesDoctrine
+					)
+				);
+				//$deleteQuery->execute();
+
 				// Update ref index:
 				foreach ($updateRefIndex_records as $pair) {
 					$this->updateRefIndex($pair[0], $pair[1]);

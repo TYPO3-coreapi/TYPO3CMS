@@ -115,12 +115,9 @@ class SplitStorage extends \TYPO3\CMS\Rsaauth\Storage\AbstractStorage {
 	 * @return void
 	 */
 	private function removeExpiredKeys(){
-		//$GLOBALS['TYPO3_DB']->exec_DELETEquery('tx_rsaauth_keys', 'crdate<' . ($GLOBALS['EXEC_TIME'] - 30 * 60));
-		$this->db->query()
-					->delete('tx_rsaauth_keys')
-					->where('crdate < :crdate')
-					->setParameter(':crdate', ($GLOBALS['EXEC_TIME'] - 30 * 60))
-					->execute();
+		$query = $this->db->createDeleteQuery();
+		$query->delete('tx_rsaauth_keys')
+				->where($query->expr->lessThan('crdate', $query->bindValue(($GLOBALS['EXEC_TIME'] - 30 * 60))))
+				->execute();
 	}
-
 }

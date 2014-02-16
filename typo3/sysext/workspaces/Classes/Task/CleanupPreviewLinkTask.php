@@ -37,7 +37,11 @@ class CleanupPreviewLinkTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask {
 	 * @return 	boolean
 	 */
 	public function execute() {
-		$GLOBALS['TYPO3_DB']->exec_DELETEquery('sys_preview', 'endtime < ' . (int)$GLOBALS['EXEC_TIME']);
+		$query = $GLOBALS['TYPO3_DB']->createDeleteQuery();
+		$query->delete('sys_preview')
+				->where($query->expr->lessThan('endtime', $query->bindValue((int)$GLOBALS['EXEC_TIME'])))
+				->execute();
+
 		return TRUE;
 	}
 

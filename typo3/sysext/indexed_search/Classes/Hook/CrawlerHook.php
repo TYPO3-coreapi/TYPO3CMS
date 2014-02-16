@@ -444,7 +444,7 @@ class CrawlerHook {
 					// Removing old registrations for all tables (code copied from class.tx_indexedsearch_modfunc1.php)
 					$tableArr = explode(',', 'index_phash,index_rel,index_section,index_grlist,index_fulltext,index_debug');
 					foreach ($tableArr as $table) {
-						$GLOBALS['TYPO3_DB']->exec_DELETEquery($table, 'phash=' . (int)$pHashRow['phash']);
+						$GLOBALS['TYPO3_DB']->executeDeleteQuery($table, array('phash' => (int)$pHashRow['phash']));
 					}
 				}
 				// End process by updating index-config record:
@@ -689,14 +689,9 @@ class CrawlerHook {
 			}
 			$tables = explode(',', 'index_debug,index_fulltext,index_grlist,index_phash,index_rel,index_section');
 			foreach ($tables as $table) {
-				$GLOBALS['TYPO3_DB']->query()
-						->delete($table)
-						->where(
-								$GLOBALS['TYPO3_DB']->query()->expr()->in(
-										'phash',
-										$GLOBALS['TYPO3_DB']->cleanIntArray($pHashesToDelete))
-						)
-						->execute();
+				$pHashesToDelete = $GLOBALS['TYPO3_DB']->cleanIntArray($pHashesToDelete);
+				$query = $GLOBALS['TYPO3_DB']->createDeleteQuery();
+				$query->delete($table)->where($query->expr->in('phash', $pHashesToDelete))->execute();
 			}
 		}
 	}

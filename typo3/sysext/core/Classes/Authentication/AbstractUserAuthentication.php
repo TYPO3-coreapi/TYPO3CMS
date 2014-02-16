@@ -1449,7 +1449,15 @@ abstract class AbstractUserAuthentication {
 	 * @todo Define visibility
 	 */
 	public function gc() {
-		$GLOBALS['TYPO3_DB']->exec_DELETEquery($this->session_table, 'ses_tstamp < ' . (int)($GLOBALS['EXEC_TIME'] - $this->gc_time) . ' AND ses_name = ' . $GLOBALS['TYPO3_DB']->fullQuoteStr($this->name, $this->session_table));
+		$query = $this->db->createDeleteQuery();
+		$query->delete($this->session_table)
+				->where(
+					$query->expr->lessThan(
+							'ses_tstamp',
+							$query->bindValue((int)($GLOBALS['EXEC_TIME'] - $this->gc_time), NULL, \PDO::PARAM_INT)),
+					$query->expr->equals('ses_name', $query->bindValue($this->name))
+				);
+		$query->execute();
 	}
 
 	/**

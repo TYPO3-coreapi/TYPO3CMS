@@ -159,7 +159,7 @@ class MetaDataRepository implements SingletonInterface {
 	 * @return void
 	 */
 	public function removeByFileUid($fileUid) {
-		$this->getDatabase()->exec_DELETEquery($this->tableName, 'file=' . (int)$fileUid);
+		$this->getDatabase()->executeDeleteQuery($this->tableName, array('file' => (int)$fileUid));
 		$this->emitRecordDeleted($fileUid);
 	}
 

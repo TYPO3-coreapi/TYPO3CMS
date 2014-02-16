@@ -144,11 +144,8 @@ class ReferenceIndex {
 				$result['deletedNodes'] = count($hashList);
 				$result['deletedNodes_hashList'] = implode(',', $hashList);
 				if (!$testOnly) {
-					//$GLOBALS['TYPO3_DB']->exec_DELETEquery('sys_refindex', 'hash IN (' . implode(',', $GLOBALS['TYPO3_DB']->fullQuoteArray($hashList, 'sys_refindex')) . ')');
-					$this->db->query()
-							->delete('sys_refindex')
-							->where($this->db->query()->expr()->in('hash', $hashList))
-							->execute();
+					$query = $this->db->createDeleteQuery();
+					$query->delete('sys_refindex')->where($query->expr->in('hash', $hashList))->execute();
 				}
 			}
 		}
@@ -907,15 +904,13 @@ class ReferenceIndex {
 					echo $Err . LF;
 				}
 				if (!$testOnly) {
-					$GLOBALS['TYPO3_DB']->query()
-						->delete('sys_refindex')
-						->where(
-								$GLOBALS['TYPO3_DB']->query()->expr()->and(
-									$GLOBALS['TYPO3_DB']->query()->expr()->eq('tablename', $tableName),
-									$GLOBALS['TYPO3_DB']->query()->expr()->notIn('recuid', $uidList)
-								)
-							)
-						->execute();
+					$query = $this->db->createDeleteQuery();
+					$query->delete('sys_refindex')->where(
+						$query->expr->logicalAnd(
+							$query->expr->equals('tablename', $query->bindValue($tableName)),
+							$query->expr->notIn('recuid', $uidList)
+						)
+					)->execute();
 				}
 			}
 		}
@@ -929,10 +924,8 @@ class ReferenceIndex {
 				echo $Err . LF;
 			}
 			if (!$testOnly) {
-				$this->db->query()
-					->delete('sys_refindex')
-					->where($this->db->query()->expr()->notIn('tablename', $tableName))
-					->execute();
+				$query = $this->db->createDeleteQuery();
+				$query->delete('sys_refindex')->where($query->expr->notIn('tablename', $tableName))->execute();
 			}
 		}
 		$testedHowMuch = $recCount . ' records from ' . $tableCount . ' tables were checked/updated.' . LF;
@@ -946,5 +939,4 @@ class ReferenceIndex {
 		}
 		return array($headerContent, $bodyContent, count($errors));
 	}
-
 }

@@ -194,12 +194,15 @@ class BackendUserController extends \TYPO3\CMS\Extbase\Mvc\Controller\ActionCont
 	 * @return void
 	 */
 	protected function terminateBackendUserSessionAction(\TYPO3\CMS\Beuser\Domain\Model\BackendUser $backendUser, $sessionId) {
-		$GLOBALS['TYPO3_DB']->exec_DELETEquery(
-			'be_sessions',
-			array(
-			'ses_userid = "' . (int)$backendUser->getUid() . '" AND ses_id = ' . $GLOBALS['TYPO3_DB']->fullQuoteStr($sessionId, 'be_sessions') . ' LIMIT 1'
+		$query = $GLOBALS['TYPO3_DB']->createDeleteQuery();
+		$query->delete('be_sessions')->where(
+			$query->expr->equals('ses_userid', $query->bindValue((int)$backendUser->getUid(), NULL, \PDO::PARAM_INT)),
+			$query->expr->equals('ses_id', $query->bindValue($sessionId))
 		);
-		if ($GLOBALS['TYPO3_DB']->sql_affected_rows() == 1) {
+		$result = $query->execute();
+		// TODO: The former query had a LIMIT 1 here. Should not be needed I guess. Test it!
+
+		if (($GLOBALS['TYPO3_DB']->sql_affected_rows() == 1) || ($result === 1)) {
 			$message = 'Session successfully terminated.';
 			$this->flashMessageContainer->add($message, '', \TYPO3\CMS\Core\Messaging\FlashMessage::OK);
 		}

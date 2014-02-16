@@ -504,7 +504,7 @@ class SchedulerModuleController extends \TYPO3\CMS\Backend\Module\BaseScriptClas
 			}
 		} catch (\UnexpectedValueException $e) {
 			// The task could not be unserialized properly, simply delete the database record
-			$result = $GLOBALS['TYPO3_DB']->exec_DELETEquery('tx_scheduler_task', 'uid = ' . (int)$this->submittedData['uid']);
+			$result = $GLOBALS['TYPO3_DB']->executeDeleteQuery('tx_scheduler_task', array('uid' => (int)$this->submittedData['uid']));
 			if ($result) {
 				$this->addMessage($GLOBALS['LANG']->getLL('msg.deleteSuccess'));
 			} else {

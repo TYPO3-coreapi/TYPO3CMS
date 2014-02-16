@@ -1021,7 +1021,7 @@ class ImportExportController extends \TYPO3\CMS\Backend\Module\BaseScriptClass {
 			if (is_array($preset)) {
 				// Update existing
 				if ($GLOBALS['BE_USER']->isAdmin() || $preset['user_uid'] === $GLOBALS['BE_USER']->user['uid']) {
-					$GLOBALS['TYPO3_DB']->exec_DELETEquery('tx_impexp_presets', 'uid=' . (int)$preset['uid']);
+					$GLOBALS['TYPO3_DB']->executeDeleteQuery('tx_impexp_presets', array('uid' => (int)$preset['uid']));
 					$msg = 'Preset #' . $preset['uid'] . ' deleted!';
 				} else {
 					$msg = 'ERROR: You were not the owner of the preset so you could not delete it.';

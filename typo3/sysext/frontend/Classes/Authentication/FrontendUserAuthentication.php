@@ -453,7 +453,7 @@ class FrontendUserAuthentication extends \TYPO3\CMS\Core\Authentication\Abstract
 	 * @return void
 	 */
 	public function removeSessionData() {
-		$GLOBALS['TYPO3_DB']->exec_DELETEquery('fe_session_data', 'hash=' . $GLOBALS['TYPO3_DB']->fullQuoteStr($this->id, 'fe_session_data'));
+		$GLOBALS['TYPO3_DB']->executeDeleteQuery('fe_session_data', array('hash' => $this->id));
 	}
 
 	/**
@@ -478,7 +478,10 @@ class FrontendUserAuthentication extends \TYPO3\CMS\Core\Authentication\Abstract
 	 */
 	public function gc() {
 		$timeoutTimeStamp = (int)($GLOBALS['EXEC_TIME'] - $this->sessionDataLifetime);
-		$GLOBALS['TYPO3_DB']->exec_DELETEquery('fe_session_data', 'tstamp < ' . $timeoutTimeStamp);
+		$query = $GLOBALS['TYPO3_DB']->createDeleteQuery();
+		$query->delete('fe_session_data')
+				->where($query->expr->lessThan('tstamp', $query->bindValue($timeoutTimeStamp, NULL, \PDO::PARAM_INT)));
+		$query->execute();
 		parent::gc();
 	}
 

@@ -1552,8 +1552,9 @@ class Indexer {
 	/**
 	 * Removes records for the indexed page, $phash
 	 *
-	 * @param 	integer		phash value to flush
-	 * @return 	void
+	 * @param integer $phash value to flush
+	 *
+	 * @return void
 	 * @todo Define visibility
 	 */
 	public function removeOldIndexedPages($phash) {
@@ -1561,12 +1562,12 @@ class Indexer {
 		$tableArray = explode(',', 'index_phash,index_section,index_grlist,index_fulltext,index_debug');
 		foreach ($tableArray as $table) {
 			if (\TYPO3\CMS\IndexedSearch\Utility\IndexedSearchUtility::isTableUsed($table)) {
-				$GLOBALS['TYPO3_DB']->exec_DELETEquery($table, 'phash=' . (int)$phash);
+				$GLOBALS['TYPO3_DB']->executeDeleteQuery($table, array('phash' => (int)$phash));
 			}
 		}
 		// Removing all index_section records with hash_t3 set to this hash (this includes such records set for external media on the page as well!). The re-insert of these records are done in indexRegularDocument($file).
 		if (\TYPO3\CMS\IndexedSearch\Utility\IndexedSearchUtility::isTableUsed('index_section')) {
-			$GLOBALS['TYPO3_DB']->exec_DELETEquery('index_section', 'phash_t3=' . (int)$phash);
+			$GLOBALS['TYPO3_DB']->executeDeleteQuery('index_section', array('phash_t3' => (int)$phash));
 		}
 	}
 
@@ -1698,7 +1699,7 @@ class Indexer {
 		$tableArray = explode(',', 'index_phash,index_grlist,index_fulltext,index_debug');
 		foreach ($tableArray as $table) {
 			if (\TYPO3\CMS\IndexedSearch\Utility\IndexedSearchUtility::isTableUsed($table)) {
-				$GLOBALS['TYPO3_DB']->exec_DELETEquery($table, 'phash=' . (int)$phash);
+				$GLOBALS['TYPO3_DB']->executeDeleteQuery($table, array('phash' => (int)$phash));
 			}
 		}
 	}
@@ -2006,7 +2007,7 @@ class Indexer {
 	 */
 	public function submitWords($wordList, $phash) {
 		if (\TYPO3\CMS\IndexedSearch\Utility\IndexedSearchUtility::isTableUsed('index_rel')) {
-			$GLOBALS['TYPO3_DB']->exec_DELETEquery('index_rel', 'phash=' . (int)$phash);
+			$GLOBALS['TYPO3_DB']->executeDeleteQuery('index_rel', array('phash' => (int)$phash));
 			foreach ($wordList as $val) {
 				$insertFields = array(
 					'phash' => (int)$phash,

@@ -7054,16 +7054,10 @@ class ContentObjectRenderer {
 				}
 			} else {
 				if ($doExec) {
-<<<<<<< HEAD
-					return $GLOBALS['TYPO3_DB']->exec_DELETEquery($table, 'uid=' . $uid);
+					return $GLOBALS['TYPO3_DB']->executeDeleteQuery($table, array('uid' => (int)$uid));
 				} else {
-					return $GLOBALS['TYPO3_DB']->DELETEquery($table, 'uid=' . $uid);
-=======
-					return $GLOBALS['TYPO3_DB']->executeDeleteQuery($table, array('uid' => intval($uid)));
-				} else {
-					// TODO: Find a way to create DELETE queries
-					return $GLOBALS['TYPO3_DB']->DELETEquery($table, 'uid=' . intval($uid));
->>>>>>> [WIP] Make usage of the Doctrine DELETE methods
+					$query = $GLOBALS['TYPO3_DB']->createDeleteQuery();
+					return $query->delete($table)->where($query->expr->equals('uid', (int)$uid))->getSql();
 				}
 			}
 		}

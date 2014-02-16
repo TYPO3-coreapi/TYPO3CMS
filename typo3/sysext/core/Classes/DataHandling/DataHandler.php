@@ -4327,8 +4327,7 @@ class DataHandler {
 							$GLOBALS['TYPO3_DB']->sql_free_result($mres);
 						}
 						// Delete the hard way...:
-						//TODO: Add types integer
-						$GLOBALS['TYPO3_DB']->exec_DELETEquery($table, 'uid=' . (int)$uid);
+						$GLOBALS['TYPO3_DB']->executeDeleteQuery($table, array('uid' => (int)$uid));
 						$this->deleteL10nOverlayRecords($table, $uid);
 					}
 					// 1 means insert, 3 means delete
@@ -5896,8 +5895,8 @@ class DataHandler {
 					// When the value of ->suggestedInsertUids[...] is "DELETE" it will try to remove the previous record
 					if ($this->suggestedInsertUids[$table . ':' . $suggestedUid] === 'DELETE') {
 						// DELETE:
-						//TODO: Add types integer
-						$GLOBALS['TYPO3_DB']->exec_DELETEquery($table, 'uid=' . (int)$suggestedUid);
+						//$GLOBALS['TYPO3_DB']->exec_DELETEquery($table, 'uid=' . (int)$suggestedUid);
+						$GLOBALS['TYPO3_DB']->executeDeleteQuery($table, array('uid' => (int)$suggestedUid));
 					}
 					$fieldArray['uid'] = $suggestedUid;
 				}
