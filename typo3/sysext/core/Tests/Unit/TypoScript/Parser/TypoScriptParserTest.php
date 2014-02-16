@@ -45,15 +45,6 @@ class TypoScriptParserTest extends \TYPO3\CMS\Core\Tests\UnitTestCase {
 	}
 
 	/**
-	 * Tear down
-	 *
-	 * @return void
-	 */
-	protected function tearDown() {
-		unset($this->typoScriptParser);
-	}
-
-	/**
 	 * Data provider for executeValueModifierReturnsModifiedResult
 	 *
 	 * @return array modifier name, modifier arguments, current value, expected result
@@ -336,6 +327,12 @@ class TypoScriptParserTest extends \TYPO3\CMS\Core\Tests\UnitTestCase {
 							'test' => '1',
 						),
 					)
+				),
+			),
+			'simple assignment operator with tab character before "="' => array(
+				'test	 = someValue',
+				array(
+					'test' => 'someValue',
 				),
 			),
 			'simple assignment operator character as value "="' => array(

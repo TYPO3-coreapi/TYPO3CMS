@@ -51,15 +51,6 @@ class PhpassSaltTest extends \TYPO3\CMS\Core\Tests\UnitTestCase {
 	}
 
 	/**
-	 * Tears down objects and settings created in this testcase.
-	 *
-	 * @return void
-	 */
-	public function tearDown() {
-		$this->objectInstance = NULL;
-	}
-
-	/**
 	 * @test
 	 */
 	public function hasCorrectBaseClass() {
@@ -132,7 +123,7 @@ class PhpassSaltTest extends \TYPO3\CMS\Core\Tests\UnitTestCase {
 	/**
 	 * Tests authentication procedure with alphabet characters.
 	 *
-	 * Checks if a "plain-text password" is everytime mapped to the
+	 * Checks if a "plain-text password" is every time mapped to the
 	 * same "salted password hash" when using the same salt.
 	 *
 	 * @test
@@ -146,7 +137,7 @@ class PhpassSaltTest extends \TYPO3\CMS\Core\Tests\UnitTestCase {
 	/**
 	 * Tests authentication procedure with numeric characters.
 	 *
-	 * Checks if a "plain-text password" is everytime mapped to the
+	 * Checks if a "plain-text password" is every time mapped to the
 	 * same "salted password hash" when using the same salt.
 	 *
 	 * @test
@@ -160,7 +151,7 @@ class PhpassSaltTest extends \TYPO3\CMS\Core\Tests\UnitTestCase {
 	/**
 	 * Tests authentication procedure with US-ASCII special characters.
 	 *
-	 * Checks if a "plain-text password" is everytime mapped to the
+	 * Checks if a "plain-text password" is every time mapped to the
 	 * same "salted password hash" when using the same salt.
 	 *
 	 * @test
@@ -174,7 +165,7 @@ class PhpassSaltTest extends \TYPO3\CMS\Core\Tests\UnitTestCase {
 	/**
 	 * Tests authentication procedure with latin1 special characters.
 	 *
-	 * Checks if a "plain-text password" is everytime mapped to the
+	 * Checks if a "plain-text password" is every time mapped to the
 	 * same "salted password hash" when using the same salt.
 	 *
 	 * @test
@@ -192,7 +183,7 @@ class PhpassSaltTest extends \TYPO3\CMS\Core\Tests\UnitTestCase {
 	/**
 	 * Tests authentication procedure with latin1 umlauts.
 	 *
-	 * Checks if a "plain-text password" is everytime mapped to the
+	 * Checks if a "plain-text password" is every time mapped to the
 	 * same "salted password hash" when using the same salt.
 	 *
 	 * @test

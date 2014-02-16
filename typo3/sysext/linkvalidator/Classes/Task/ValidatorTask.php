@@ -285,7 +285,7 @@ class ValidatorTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask {
 	 * @return string $pageSections Content of page section
 	 */
 	protected function checkPageLinks($page) {
-		$page = intval($page);
+		$page = (int)$page;
 		$pageSections = '';
 		$pageIds = '';
 		$oldLinkCounts = array();
@@ -453,7 +453,7 @@ class ValidatorTask extends \TYPO3\CMS\Scheduler\Task\AbstractTask {
 			}
 		}
 		if (is_array($validEmailList) && !empty($validEmailList)) {
-			$mail->setTo($this->email);
+			$mail->setTo($validEmailList);
 		} else {
 			$sendEmail = FALSE;
 		}

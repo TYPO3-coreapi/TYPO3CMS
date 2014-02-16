@@ -88,8 +88,8 @@ class CategoryRegistry implements \TYPO3\CMS\Core\SingletonInterface {
 			throw new \InvalidArgumentException('TYPO3\\CMS\\Core\\Category\\CategoryRegistry No tableName given.', 1369122038);
 		}
 
-		// Makes sure there is an existing table configuration and nothing registered yet:
-		if (isset($GLOBALS['TCA'][$tableName]) && !$this->isRegistered($tableName, $fieldName)) {
+		// Makes sure nothing was registered yet.
+		if (!$this->isRegistered($tableName, $fieldName)) {
 			$this->registry[$extensionKey][$tableName][$fieldName] = $options;
 			$result = TRUE;
 		}
@@ -143,7 +143,7 @@ class CategoryRegistry implements \TYPO3\CMS\Core\SingletonInterface {
 	public function getCategoryFieldsForTable(array &$configuration, \TYPO3\CMS\Backend\Form\FormEngine $formObject) {
 		$table = '';
 		// Define the table being looked up from the type of menu
-		if ($configuration['row']['menu_type'] == 9) {
+		if ($configuration['row']['menu_type'] == 'categorized_pages') {
 			$table = 'pages';
 		} elseif ($configuration['row']['menu_type'] == 'categorized_content') {
 			$table = 'tt_content';
@@ -371,5 +371,30 @@ class CategoryRegistry implements \TYPO3\CMS\Core\SingletonInterface {
 			// Adding fields to an existing table definition
 			\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::addTCAcolumns($tableName, $columns);
 		}
+	}
+
+	/**
+	 * A slot method to inject the required category database fields to the
+	 * tables definition string
+	 *
+	 * @param array $sqlString
+	 * @return array
+	 */
+	public function addCategoryDatabaseSchemaToTablesDefinition(array $sqlString) {
+		$sqlString[] = $this->getDatabaseTableDefinitions();
+		return array('sqlString' => $sqlString);
+	}
+
+	/**
+	 * A slot method to inject the required category database fields of an
+	 * extension to the tables definition string
+	 *
+	 * @param array $sqlString
+	 * @param string $extensionKey
+	 * @return array
+	 */
+	public function addExtensionCategoryDatabaseSchemaToTablesDefinition(array $sqlString, $extensionKey) {
+		$sqlString[] = $this->getDatabaseTableDefinition($extensionKey);
+		return array('sqlString' => $sqlString, 'extensionKey' => $extensionKey);
 	}
 }

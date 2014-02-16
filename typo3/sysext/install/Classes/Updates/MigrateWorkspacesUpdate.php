@@ -85,7 +85,7 @@ class MigrateWorkspacesUpdate extends InstallSysExtsUpdate {
 					$reason .= ' Both extensions "version" and "workspaces" need to be
 						present to use the entire versioning and workflow featureset of TYPO3.';
 				}
-				$tables = array_keys($GLOBALS['TYPO3_DB']->admin_get_tables());
+				$tables = array_keys($GLOBALS['TYPO3_DB']->adminGetTables());
 				// sys_workspace table might not exists if version extension was never installed
 				if (!in_array('sys_workspace', $tables) || !in_array('sys_workspace_stage', $tables)) {
 					$result = TRUE;
@@ -276,9 +276,9 @@ class MigrateWorkspacesUpdate extends InstallSysExtsUpdate {
 	 */
 	protected function migrateOldRecordsToStage($workspaceId, $oldStageId, $newStageId) {
 		$tables = array_keys($GLOBALS['TCA']);
-		$where = 't3ver_wsid = ' . intval($workspaceId) . ' AND t3ver_stage = ' . intval($oldStageId) . ' AND pid = -1';
+		$where = 't3ver_wsid = ' . (int)$workspaceId . ' AND t3ver_stage = ' . (int)$oldStageId . ' AND pid = -1';
 		$values = array(
-			't3ver_stage' => intval($newStageId)
+			't3ver_stage' => (int)$newStageId
 		);
 		foreach ($tables as $table) {
 			$versioningVer = \TYPO3\CMS\Core\Utility\MathUtility::forceIntegerInRange($GLOBALS['TCA'][$table]['ctrl']['versioningWS'], 0, 2, 0);
@@ -327,7 +327,7 @@ class MigrateWorkspacesUpdate extends InstallSysExtsUpdate {
 		$tables = array_keys($GLOBALS['TCA']);
 		$where = 't3ver_wsid=-1';
 		$values = array(
-			't3ver_wsid' => intval($wsId)
+			't3ver_wsid' => (int)$wsId
 		);
 		foreach ($tables as $table) {
 			$versioningVer = \TYPO3\CMS\Core\Utility\MathUtility::forceIntegerInRange($GLOBALS['TCA'][$table]['ctrl']['versioningWS'], 0, 2, 0);
@@ -368,7 +368,7 @@ class MigrateWorkspacesUpdate extends InstallSysExtsUpdate {
 	protected function hasElementsOnWorkspace($table, $workspaceId) {
 		$count = 0;
 		if ($this->checkIfTableExists($table)) {
-			$count = $GLOBALS['TYPO3_DB']->exec_SELECTcountRows('uid', $table, 't3ver_wsid=' . intval($workspaceId));
+			$count = $GLOBALS['TYPO3_DB']->exec_SELECTcountRows('uid', $table, 't3ver_wsid=' . (int)$workspaceId);
 			$this->sqlQueries[] = $GLOBALS['TYPO3_DB']->debug_lastBuiltQuery;
 		}
 

@@ -69,6 +69,7 @@ class ExtensionListUtility implements \SplObserver {
 		'extension_key',
 		'version',
 		'integer_version',
+		'current_version',
 		'alldownloadcounter',
 		'downloadcounter',
 		'title',
@@ -92,7 +93,7 @@ class ExtensionListUtility implements \SplObserver {
 	 *
 	 * @var array
 	 */
-	static protected $fieldIndicesNoQuote = array(2, 3, 4, 10, 12, 13, 14, 15);
+	static protected $fieldIndicesNoQuote = array(2, 3, 5, 11, 13, 14, 15, 16);
 
 	/**
 	 * Keeps repository UID.
@@ -181,22 +182,24 @@ class ExtensionListUtility implements \SplObserver {
 			$subject->getExtkey(),
 			$subject->getVersion(),
 			$versionRepresentations['version_int'],
-			intval($subject->getAlldownloadcounter()),
-			intval($subject->getDownloadcounter()),
+			// initialize current_version, correct value computed later:
+			0,
+			(int)$subject->getAlldownloadcounter(),
+			(int)$subject->getDownloadcounter(),
 			!is_null($subject->getTitle()) ? $subject->getTitle() : '',
 			$subject->getOwnerusername(),
 			!is_null($subject->getAuthorname()) ? $subject->getAuthorname() : '',
 			!is_null($subject->getAuthoremail()) ? $subject->getAuthoremail() : '',
 			!is_null($subject->getAuthorcompany()) ? $subject->getAuthorcompany() : '',
-			intval($subject->getLastuploaddate()),
+			(int)$subject->getLastuploaddate(),
 			$subject->getT3xfilemd5(),
 			$this->repositoryUid,
-			$this->extensionModel->getDefaultState($subject->getState() ? $subject->getState() : ''),
-			intval($subject->getReviewstate()),
-			$this->extensionModel->getCategoryIndexFromStringOrNumber($subject->getCategory() ? $subject->getCategory() : ''),
-			$subject->getDescription() ? $subject->getDescription() : '',
-			$subject->getDependencies() ? $subject->getDependencies() : '',
-			$subject->getUploadcomment() ? $subject->getUploadcomment() : ''
+			$this->extensionModel->getDefaultState($subject->getState() ?: ''),
+			(int)$subject->getReviewstate(),
+			$this->extensionModel->getCategoryIndexFromStringOrNumber($subject->getCategory() ?: ''),
+			$subject->getDescription() ?: '',
+			$subject->getDependencies() ?: '',
+			$subject->getUploadcomment() ?: ''
 		);
 		++$this->sumRecords;
 	}

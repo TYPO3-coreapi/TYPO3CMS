@@ -137,7 +137,7 @@ class IndexerService implements \TYPO3\CMS\Core\SingletonInterface {
 					'tstamp' => $GLOBALS['EXEC_TIME']
 				);
 				if (TYPO3_MODE === 'BE') {
-					$additionalInfo['cruser_id'] = intval($GLOBALS['BE_USER']->user['uid']);
+					$additionalInfo['cruser_id'] = (int)$GLOBALS['BE_USER']->user['uid'];
 				}
 				$indexRecord = array_merge($fileInfo, $additionalInfo);
 
@@ -146,7 +146,7 @@ class IndexerService implements \TYPO3\CMS\Core\SingletonInterface {
 			}
 		}
 		// Check for an error during the execution and throw an exception
-		$error = $GLOBALS['TYPO3_DB']->sql_error();
+		$error = $GLOBALS['TYPO3_DB']->sqlErrorMessage();
 		if ($error) {
 			throw new \RuntimeException('Error during file indexing: "' . $error . '"', 1314455642);
 		}

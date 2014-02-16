@@ -133,13 +133,19 @@ class LinkAnalyzer {
 		$results = array();
 		if (count($checkOptions) > 0) {
 			$checkKeys = array_keys($checkOptions);
-			$checkLinkTypeCondition = ' AND link_type IN (\'' . implode('\',\'', $checkKeys) . '\')';
-			$GLOBALS['TYPO3_DB']->exec_DELETEquery(
-				'tx_linkvalidator_link',
-				'(record_pid IN (' . $this->pidList . ')' .
-					' OR ( record_uid IN (' . $this->pidList . ') AND table_name like \'pages\'))' .
-					$checkLinkTypeCondition
-			);
+
+			$query = $GLOBALS['TYPO3_DB']->createDeleteQuery();
+			$expr = $query->expr;
+
+			$query->delete('tx_linkvalidator_link')->where(
+				$expr->logicalOr(
+					$expr->in('record_pid', $this->pidList),
+					$expr->in('record_uid', $this->pidList)
+				),
+				$expr->like('table_name', 'pages'),
+				$expr->in('link_type', $checkKeys)
+			)->execute();
+
 			// Traverse all configured tables
 			foreach ($this->searchFields as $table => $fields) {
 				if ($table === 'pages') {
@@ -395,9 +401,9 @@ class LinkAnalyzer {
 	 * @return string Returns the list with a comma in the end (if any pages selected!)
 	 */
 	public function extGetTreeList($id, $depth, $begin = 0, $permsClause, $considerHidden = FALSE) {
-		$depth = intval($depth);
-		$begin = intval($begin);
-		$id = intval($id);
+		$depth = (int)$depth;
+		$begin = (int)$begin;
+		$id = (int)$id;
 		$theList = '';
 		if ($depth > 0) {
 			$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery(

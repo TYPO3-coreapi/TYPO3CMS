@@ -86,8 +86,8 @@ class ImagelinkUpdate extends AbstractUpdate {
 				$newImageLink = implode(LF, $newImageLink);
 				$GLOBALS['TYPO3_DB']->exec_UPDATEquery('tt_content', 'uid=' . $row['uid'], array('image_link' => $newImageLink));
 				$dbQueries[] = str_replace(LF, ' ', $GLOBALS['TYPO3_DB']->debug_lastBuiltQuery);
-				if ($GLOBALS['TYPO3_DB']->sql_error()) {
-					$customMessages = 'SQL-ERROR: ' . htmlspecialchars($GLOBALS['TYPO3_DB']->sql_error());
+				if ($GLOBALS['TYPO3_DB']->sqlErrorMessage()) {
+					$customMessages = 'SQL-ERROR: ' . htmlspecialchars($GLOBALS['TYPO3_DB']->sqlErrorMessage());
 					$result = $result & FALSE;
 				}
 			}

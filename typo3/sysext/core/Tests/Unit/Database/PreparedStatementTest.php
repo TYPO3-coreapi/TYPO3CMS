@@ -35,7 +35,7 @@ class PreparedStatementTest extends \TYPO3\CMS\Core\Tests\UnitTestCase {
 	/**
 	 * @var \PHPUnit_Framework_MockObject_MockObject|\TYPO3\CMS\Core\Database\DatabaseConnection
 	 */
-	private $databaseStub;
+	protected $databaseStub;
 
 	/**
 	 * Create a new database mock object for every test
@@ -45,6 +45,12 @@ class PreparedStatementTest extends \TYPO3\CMS\Core\Tests\UnitTestCase {
 	 */
 	protected function setUp() {
 		$this->databaseStub = $this->setUpAndReturnDatabaseStub();
+	}
+
+	protected function tearDown() {
+		if (ExtensionManagementUtility::isLoaded('doctrine_dbal')) {
+			$this->databaseStub->getDatabaseHandle()->close();
+		}
 	}
 
 	//////////////////////

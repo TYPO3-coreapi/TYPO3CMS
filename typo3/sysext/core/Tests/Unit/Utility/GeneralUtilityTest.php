@@ -55,6 +55,7 @@ class GeneralUtilityTest extends \TYPO3\CMS\Core\Tests\UnitTestCase {
 		foreach ($this->testFilesToDelete as $absoluteFileName) {
 			Utility\GeneralUtility::rmdir($absoluteFileName, TRUE);
 		}
+		parent::tearDown();
 	}
 
 	/**
@@ -890,7 +891,7 @@ class GeneralUtilityTest extends \TYPO3\CMS\Core\Tests\UnitTestCase {
 	public function htmlspecialcharsDecodeReturnsDecodedString() {
 		$string = '<typo3 version="6.0">&nbsp;</typo3>';
 		$encoded = htmlspecialchars($string);
-		$decoded = Utility\GeneralUtility::htmlspecialchars_decode($encoded);
+		$decoded = htmlspecialchars_decode($encoded);
 		$this->assertEquals($string, $decoded);
 	}
 
@@ -1351,13 +1352,68 @@ class GeneralUtilityTest extends \TYPO3\CMS\Core\Tests\UnitTestCase {
 	//////////////////////////////////
 	// Tests concerning revExplode
 	//////////////////////////////////
+
+	public function revExplodeDataProvider() {
+		return array(
+			'limit 0 should return unexploded string' => array(
+				'my:words:here',
+				0,
+				array('my:words:here')
+			),
+			'limit 1 should return unexploded string' => array(
+				'my:words:here',
+				1,
+				array('my:words:here')
+			),
+			'limit 2 should return two pieces' => array(
+				'my:words:here',
+				2,
+				array('my:words', 'here')
+			),
+			'limit 3 should return unexploded string' => array(
+				'my:words:here',
+				3,
+				array('my', 'words', 'here')
+			),
+			'limit 0 should return unexploded string if no delimiter is contained' => array(
+				'mywordshere',
+				0,
+				array('mywordshere')
+			),
+			'limit 1 should return unexploded string if no delimiter is contained' => array(
+				'mywordshere',
+				1,
+				array('mywordshere')
+			),
+			'limit 2 should return unexploded string if no delimiter is contained' => array(
+				'mywordshere',
+				2,
+				array('mywordshere')
+			),
+			'limit 3 should return unexploded string if no delimiter is contained' => array(
+				'mywordshere',
+				3,
+				array('mywordshere')
+			),
+		);
+	}
+
+	/**
+	 * @test
+	 * @dataProvider revExplodeDataProvider
+	 */
+	public function revExplodeCorrectlyExplodesStringForGivenPartsCount($testString, $count, $expectedArray) {
+		$actualArray = Utility\GeneralUtility::revExplode(':', $testString, $count);
+		$this->assertEquals($expectedArray, $actualArray);
+	}
+
 	/**
 	 * @test
 	 */
-	public function revExplodeExplodesString() {
-		$testString = 'my:words:here';
-		$expectedArray = array('my:words', 'here');
-		$actualArray = Utility\GeneralUtility::revExplode(':', $testString, 2);
+	public function revExplodeRespectsLimitThreeWhenExploding() {
+		$testString = 'even:more:of:my:words:here';
+		$expectedArray = array('even:more:of:my', 'words', 'here');
+		$actualArray = Utility\GeneralUtility::revExplode(':', $testString, 3);
 		$this->assertEquals($expectedArray, $actualArray);
 	}
 
@@ -2335,13 +2391,17 @@ class GeneralUtilityTest extends \TYPO3\CMS\Core\Tests\UnitTestCase {
 				'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789',
 				'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
 			),
-			'Angel brackets and ampersand are encoded' => array(
+			'Angle brackets and ampersand are encoded' => array(
 				'<>&',
-				'\\x3C\\x3E\\x26'
+				'\\u003C\\u003E\\u0026'
 			),
-			'Quotes and slashes are encoded' => array(
-				'"\'\\/',
-				'\\x22\\x27\\x5C\\x2F'
+			'Quotes and backslashes are encoded' => array(
+				'"\'\\',
+				'\\u0022\\u0027\\u005C'
+			),
+			'Forward slashes are escaped' => array(
+				'</script>',
+				'\\u003C\\/script\\u003E'
 			),
 			'Empty string stays empty' => array(
 				'',
@@ -2349,19 +2409,19 @@ class GeneralUtilityTest extends \TYPO3\CMS\Core\Tests\UnitTestCase {
 			),
 			'Exclamation mark and space are properly encoded' => array(
 				'Hello World!',
-				'Hello\\x20World\\x21'
+				'Hello\\u0020World\\u0021'
 			),
 			'Whitespaces are properly encoded' => array(
 				TAB . LF . CR . ' ',
-				'\\x09\\x0A\\x0D\\x20'
+				'\\u0009\\u000A\\u000D\\u0020'
 			),
 			'Null byte is properly encoded' => array(
 				chr(0),
-				'\\x00'
+				'\\u0000'
 			),
 			'Umlauts are properly encoded' => array(
 				'ÜüÖöÄä',
-				'\\xDC\\xFC\\xD6\\xF6\\xC4\\xE4'
+				'\\u00dc\\u00fc\\u00d6\\u00f6\\u00c4\\u00e4'
 			)
 		);
 	}
@@ -2600,36 +2660,6 @@ class GeneralUtilityTest extends \TYPO3\CMS\Core\Tests\UnitTestCase {
 	 */
 	public function minifyJavaScriptErroneousCallback() {
 		throw new \RuntimeException('foo', 1344888548);
-	}
-
-	///////////////////////////
-	// Tests concerning getUrl
-	///////////////////////////
-
-	/**
-	 * @test
-	 */
-	public function getUrlWithAdditionalRequestHeadersProvidesHttpHeaderOnError() {
-		if (!$this->isConnected()) {
-			$this->markTestSkipped('No internet connection detected');
-		}
-		$url = 'http://typo3.org/i-do-not-exist-' . time();
-		$report = array();
-		Utility\GeneralUtility::getUrl($url, 0, array(), $report);
-		$this->assertContains('404', $report['message']);
-	}
-
-	/**
-	 * @test
-	 */
-	public function getUrlProvidesWithoutAdditionalRequestHeadersHttpHeaderOnError() {
-		if (!$this->isConnected()) {
-			$this->markTestSkipped('No internet connection detected');
-		}
-		$url = 'http://typo3.org/i-do-not-exist-' . time();
-		$report = array();
-		Utility\GeneralUtility::getUrl($url, 0, FALSE, $report);
-		$this->assertContains('404', $report['message'], 'Did not provide the HTTP response header when requesting a failing URL.');
 	}
 
 	///////////////////////////////
@@ -2990,7 +3020,13 @@ class GeneralUtilityTest extends \TYPO3\CMS\Core\Tests\UnitTestCase {
 			$this->markTestSkipped($methodName . '() test cannot be done when the web server user is only member of 1 group.');
 			return FALSE;
 		}
-		$groupInfo = posix_getgrgid($groups[1]);
+		$uname = strtolower(php_uname());
+		$groupOffset = 1;
+		if (strpos($uname, 'darwin') !== FALSE) {
+			// We are on OSX and it seems that the first group needs to be fetched since Mavericks
+			$groupOffset = 0;
+		}
+		$groupInfo = posix_getgrgid($groups[$groupOffset]);
 		return $groupInfo['name'];
 	}
 
@@ -3282,6 +3318,161 @@ class GeneralUtilityTest extends \TYPO3\CMS\Core\Tests\UnitTestCase {
 		symlink($notExistingFile, $symlinkName);
 		Utility\GeneralUtility::rmdir($symlinkName, TRUE);
 		$this->assertFalse(is_link($symlinkName));
+	}
+
+	///////////////////////////////////
+	// Tests concerning getFilesInDir
+	///////////////////////////////////
+
+	/**
+	 * Helper method to create test directory.
+	 *
+	 * @return string A unique directory name prefixed with test_.
+	 */
+	protected function getFilesInDirCreateTestDirectory() {
+		if (!class_exists('org\\bovigo\\vfs\\vfsStreamWrapper')) {
+			$this->markTestSkipped('getFilesInDirCreateTestDirectory() helper method not available without vfsStream.');
+		}
+		$structure = array(
+			'subDirectory' => array(
+				'test.php' => 'butter',
+				'other.php' => 'milk',
+				'stuff.csv' => 'honey',
+			),
+			'excludeMe.txt' => 'cocoa nibs',
+			'testB.txt' => 'olive oil',
+			'testA.txt' => 'eggs',
+			'testC.txt' => 'carrots',
+			'test.js' => 'oranges',
+			'test.css' => 'apples',
+			'.secret.txt' => 'sammon',
+		);
+		\vfsStream::setup('test', NULL, $structure);
+		return \vfsStream::url('test');
+	}
+
+	/**
+	 * @test
+	 */
+	public function getFilesInDirFindsRegularFile() {
+		$vfsStreamUrl = $this->getFilesInDirCreateTestDirectory();
+		$files = Utility\GeneralUtility::getFilesInDir($vfsStreamUrl);
+		$this->assertContains('testA.txt', $files);
+	}
+
+	/**
+	 * @test
+	 */
+	public function getFilesInDirFindsHiddenFile() {
+		$vfsStreamUrl = $this->getFilesInDirCreateTestDirectory();
+		$files = Utility\GeneralUtility::getFilesInDir($vfsStreamUrl);
+		$this->assertContains('.secret.txt', $files);
+	}
+
+	/**
+	 * @test
+	 */
+	public function getFilesInDirByExtensionFindsFiles() {
+		$vfsStreamUrl = $this->getFilesInDirCreateTestDirectory();
+		$files = Utility\GeneralUtility::getFilesInDir($vfsStreamUrl, 'txt,js');
+		$this->assertContains('testA.txt', $files);
+		$this->assertContains('test.js', $files);
+	}
+
+	/**
+	 * @test
+	 */
+	public function getFilesInDirByExtensionDoesNotFindFilesWithOtherExtensions() {
+		$vfsStreamUrl = $this->getFilesInDirCreateTestDirectory();
+		$files = Utility\GeneralUtility::getFilesInDir($vfsStreamUrl, 'txt,js');
+		$this->assertContains('testA.txt', $files);
+		$this->assertContains('test.js', $files);
+		$this->assertNotContains('test.css', $files);
+	}
+
+	/**
+	 * @test
+	 */
+	public function getFilesInDirExcludesFilesMatchingPattern() {
+		$vfsStreamUrl = $this->getFilesInDirCreateTestDirectory();
+		$files = Utility\GeneralUtility::getFilesInDir($vfsStreamUrl, '', FALSE, '', 'excludeMe.*');
+		$this->assertContains('test.js', $files);
+		$this->assertNotContains('excludeMe.txt', $files);
+	}
+
+	/**
+	 * @test
+	 */
+	public function getFilesInDirCanPrependPath() {
+		$vfsStreamUrl = $this->getFilesInDirCreateTestDirectory();
+		$this->assertContains(
+			$vfsStreamUrl . '/testA.txt',
+			Utility\GeneralUtility::getFilesInDir($vfsStreamUrl, '', TRUE)
+		);
+	}
+
+	/**
+	 * @test
+	 */
+	public function getFilesInDirCanOrderAlphabetically() {
+		$vfsStreamUrl = $this->getFilesInDirCreateTestDirectory();
+		$this->assertSame(
+			array_values(Utility\GeneralUtility::getFilesInDir($vfsStreamUrl, '', FALSE, '1')),
+			array('.secret.txt', 'excludeMe.txt', 'test.css', 'test.js', 'testA.txt', 'testB.txt', 'testC.txt')
+		);
+	}
+
+	/**
+	 * @test
+	 */
+	public function getFilesInDirCanOrderByMtime() {
+		$files = array();
+		$iterator = new \DirectoryIterator(__DIR__);
+		foreach ($iterator as $fileinfo) {
+			if ($fileinfo->isFile()) {
+				$files[$fileinfo->getFilename()] = $fileinfo->getMTime();
+			}
+		}
+		asort($files);
+		$this->assertSame(
+			array_values(Utility\GeneralUtility::getFilesInDir(__DIR__, '', FALSE, 'mtime')),
+			array_keys($files)
+		);
+	}
+
+	/**
+	 * @test
+	 */
+	public function getFilesInDirReturnsArrayWithMd5OfElementAndPathAsArrayKey() {
+		$vfsStreamUrl = $this->getFilesInDirCreateTestDirectory();
+		$this->assertArrayHasKey(
+			md5($vfsStreamUrl . '/testA.txt'),
+			Utility\GeneralUtility::getFilesInDir($vfsStreamUrl)
+		);
+	}
+
+	/**
+	 * @test
+	 */
+	public function getFilesInDirDoesNotFindDirectories() {
+		$vfsStreamUrl = $this->getFilesInDirCreateTestDirectory();
+		$this->assertNotContains(
+			'subDirectory',
+			Utility\GeneralUtility::getFilesInDir($vfsStreamUrl)
+		);
+	}
+
+	/**
+	 * Dotfiles; current directory: '.' and parent directory: '..' must not be
+	 * present.
+	 *
+	 * @test
+	 */
+	public function getFilesInDirDoesNotFindDotfiles() {
+		$vfsStreamUrl = $this->getFilesInDirCreateTestDirectory();
+		$files = Utility\GeneralUtility::getFilesInDir($vfsStreamUrl);
+		$this->assertNotContains('..', $files);
+		$this->assertNotContains('.', $files);
 	}
 
 	///////////////////////////////
@@ -3871,12 +4062,31 @@ class GeneralUtilityTest extends \TYPO3\CMS\Core\Tests\UnitTestCase {
 	}
 
 	/**
-	 * Tests whether verifyFilenameAgainstDenyPattern detects the NULL character.
-	 *
-	 * @test
+	 * @return array
 	 */
-	public function verifyFilenameAgainstDenyPatternDetectsNullCharacter() {
-		$this->assertFalse(Utility\GeneralUtility::verifyFilenameAgainstDenyPattern('image .gif'));
+	public function deniedFilesDataProvider() {
+		return array(
+			'Nul character in file' => array('image' . chr(0) . '.gif'),
+			'Nul character in file with .php' => array('image.php' . chr(0) . '.gif'),
+			'Regular .php file' => array('file.php'),
+			'Regular .php5 file' => array('file.php5'),
+			'Regular .php3 file' => array('file.php3'),
+			'Regular .phpsh file' => array('file.phpsh'),
+			'Regular .phtml file' => array('file.phtml'),
+			'PHP file in the middle' => array('file.php.txt'),
+			'.htaccess file' => array('.htaccess'),
+		);
+	}
+
+	/**
+	 * Tests whether verifyFilenameAgainstDenyPattern detects denied files.
+	 *
+	 * @param string $deniedFile
+	 * @test
+	 * @dataProvider deniedFilesDataProvider
+	 */
+	public function verifyFilenameAgainstDenyPatternDetectsNotAllowedFiles($deniedFile) {
+		$this->assertFalse(Utility\GeneralUtility::verifyFilenameAgainstDenyPattern($deniedFile));
 	}
 
 

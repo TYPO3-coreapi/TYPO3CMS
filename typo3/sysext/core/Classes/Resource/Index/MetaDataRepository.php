@@ -78,7 +78,7 @@ class MetaDataRepository implements SingletonInterface {
 	 * @throws \RuntimeException
 	 */
 	public function findByFileUid($uid) {
-		$uid = intval($uid);
+		$uid = (int)$uid;
 		if ($uid <= 0) {
 			throw new \RuntimeException('Metadata can only be retrieved for indexed files.', 1381590731);
 		}
@@ -111,7 +111,7 @@ class MetaDataRepository implements SingletonInterface {
 	 */
 	public function createMetaDataRecord($fileUid, array $additionalFields = array()) {
 		$emptyRecord =  array(
-			'file' => intval($fileUid),
+			'file' => (int)$fileUid,
 			'pid' => 0,
 			'crdate' => $GLOBALS['EXEC_TIME'],
 			'tstamp' => $GLOBALS['EXEC_TIME'],
@@ -137,7 +137,7 @@ class MetaDataRepository implements SingletonInterface {
 	 */
 	public function update($fileUid, array $data) {
 		if (count($this->tableFields) === 0) {
-			$this->tableFields = $this->getDatabase()->admin_get_fields($this->tableName);
+			$this->tableFields = $this->getDatabase()->adminGetFields($this->tableName);
 		}
 		$updateRow = array_intersect_key($data, $this->tableFields);
 		if (array_key_exists('uid', $updateRow)) {
@@ -146,7 +146,7 @@ class MetaDataRepository implements SingletonInterface {
 		$row = $this->findByFileUid($fileUid);
 		if (count($updateRow) > 0) {
 			$updateRow['tstamp'] = time();
-			$this->getDatabase()->exec_UPDATEquery($this->tableName, 'uid = ' . intval($row['uid']), $updateRow);
+			$this->getDatabase()->exec_UPDATEquery($this->tableName, 'uid = ' . (int)$row['uid'], $updateRow);
 
 			$this->emitRecordUpdated(array_merge($row, $updateRow));
 		}
@@ -159,7 +159,7 @@ class MetaDataRepository implements SingletonInterface {
 	 * @return void
 	 */
 	public function removeByFileUid($fileUid) {
-		$this->getDatabase()->exec_DELETEquery($this->tableName, 'file=' . intval($fileUid));
+		$this->getDatabase()->executeDeleteQuery($this->tableName, array('file' => (int)$fileUid));
 		$this->emitRecordDeleted($fileUid);
 	}
 

@@ -23,6 +23,7 @@ namespace TYPO3\CMS\Backend\Tests\Unit\Configuration\TypoScript\ConditionMatchin
  *
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
+use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 
 /**
  * Testcase for class \TYPO3\CMS\Backend\Configuration\TypoScript\ConditionMatching\ConditionMatcher.
@@ -34,51 +35,25 @@ class ConditionMatcherTest extends \TYPO3\CMS\Core\Tests\UnitTestCase {
 	/**
 	 * @var array
 	 */
-	private $backupGlobalVariables;
-
-	/**
-	 * @var array
-	 */
-	private $rootline;
+	protected $rootline;
 
 	/**
 	 * @var \TYPO3\CMS\Backend\Configuration\TypoScript\ConditionMatching\ConditionMatcher
 	 */
-	private $matchCondition;
+	protected $matchCondition;
 
 	/**
 	 * @var string
 	 */
-	private $testTableName;
+	protected $testTableName;
 
 	public function setUp() {
-		$this->backupGlobalVariables = array(
-			'_ENV' => $_ENV,
-			'_GET' => $_GET,
-			'_POST' => $_POST,
-			'_SERVER' => $_SERVER,
-			'TCA' => $GLOBALS['TCA'],
-			'TYPO3_DB' => $GLOBALS['TYPO3_DB'],
-			'TYPO3_CONF_VARS' => $GLOBALS['TYPO3_CONF_VARS'],
-			'T3_VAR' => $GLOBALS['T3_VAR'],
-			'BE_USER' => $GLOBALS['BE_USER'],
-			'SOBE' => $GLOBALS['SOBE']
-		);
 		$this->testTableName = 'TYPO3\\CMS\\Backend\\Configuration\\TypoScript\\ConditionMatching\\ConditionMatcher_testTable';
 		$this->testGlobalNamespace = uniqid('TEST');
 		$GLOBALS['TCA'][$this->testTableName] = array('ctrl' => array());
 		$GLOBALS[$this->testGlobalNamespace] = array();
 		$this->setUpBackend();
 		$this->matchCondition = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Backend\\Configuration\\TypoScript\\ConditionMatching\\ConditionMatcher');
-	}
-
-	public function tearDown() {
-		foreach ($this->backupGlobalVariables as $key => $data) {
-			$GLOBALS[$key] = $data;
-		}
-		unset($this->matchCondition);
-		unset($this->backupGlobalVariables);
-		unset($GLOBALS[$this->testGlobalNamespace]);
 	}
 
 	private function setUpBackend() {
@@ -509,6 +484,19 @@ class ConditionMatcherTest extends \TYPO3\CMS\Core\Tests\UnitTestCase {
 	public function globalStringConditionMatchesOnEqualExpression() {
 		$this->assertTrue($this->matchCondition->match('[globalString = LIT:TYPO3.Test.Condition = TYPO3.Test.Condition]'));
 		$this->assertFalse($this->matchCondition->match('[globalString = LIT:TYPO3.Test.Condition = TYPO3]'));
+	}
+
+	/**
+	 * Tests whether string comparison matches.
+	 *
+	 * @test
+	 */
+	public function globalStringConditionMatchesOnEmptyExpressionWithValueSetToEmptyString() {
+		$testKey = uniqid('test');
+		$_GET = array();
+		$_POST = array($testKey => '');
+		$this->assertTrue($this->matchCondition->match('[globalString = GP:' . $testKey . '=]'));
+		$this->assertTrue($this->matchCondition->match('[globalString = GP:' . $testKey . ' = ]'));
 	}
 
 	/**

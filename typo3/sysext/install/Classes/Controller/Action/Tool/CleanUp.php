@@ -120,7 +120,7 @@ class CleanUp extends Action\AbstractAction implements Action\ActionInterface {
 			),
 		);
 		$database = $this->getDatabase();
-		$allTables = array_keys($database->admin_get_tables());
+		$allTables = array_keys($database->adminGetTables());
 		$tables = array();
 		foreach ($tableCandidates as $candidate) {
 			if (in_array($candidate['name'], $allTables)) {
@@ -141,7 +141,7 @@ class CleanUp extends Action\AbstractAction implements Action\ActionInterface {
 		$database = $this->getDatabase();
 		foreach ($this->postValues['values'] as $tableName => $selected) {
 			if ($selected == 1) {
-				$database->exec_TRUNCATEquery($tableName);
+				$database->executeTruncateQuery($tableName);
 				$clearedTables[] = $tableName;
 			}
 		}
@@ -213,7 +213,7 @@ class CleanUp extends Action\AbstractAction implements Action\ActionInterface {
 								$ok = TRUE;
 							}
 						} else {
-							if (fileatime($absoluteFile) < $GLOBALS['EXEC_TIME'] - intval($timeMap[$condition]) * 60 * 60 * 24) {
+							if (fileatime($absoluteFile) < $GLOBALS['EXEC_TIME'] - (int)$timeMap[$condition] * 60 * 60 * 24) {
 								$ok = TRUE;
 							}
 						}

@@ -56,6 +56,7 @@ class CronCommandTest extends \TYPO3\CMS\Core\Tests\UnitTestCase {
 
 	public function tearDown() {
 		date_default_timezone_set($this->timezoneBackup);
+		parent::tearDown();
 	}
 
 	/**
@@ -281,8 +282,8 @@ class CronCommandTest extends \TYPO3\CMS\Core\Tests\UnitTestCase {
 	 * @dataProvider expectedCalculatedTimestampDataProvider
 	 * @param string $cronCommand Cron command
 	 * @param integer $startTimestamp [unused] Timestamp for start of calculation
-	 * @param string $firstTimestamp Timestamp of the next execution, to be feeded to strtotime
-	 * @param string $secondTimestamp Timestamp of the further execution, to be feeded to strtotime
+	 * @param string $firstTimestamp Timestamp of the next execution, to be fed to strtotime
+	 * @param string $secondTimestamp Timestamp of the further execution, to be fed to strtotime
 	 */
 	public function calculateNextValueDeterminesCorrectNextCalculatedTimestampOnConsecutiveCall($cronCommand, $startTimestamp, $firstTimestamp, $secondTimestamp) {
 		$instance = new \TYPO3\CMS\Scheduler\CronCommand\CronCommand($cronCommand, strtotime($firstTimestamp));

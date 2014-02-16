@@ -57,7 +57,7 @@ class TruncateSysFileProcessedFileTable extends AbstractUpdate {
 	 * @return boolean Whether everything went smoothly or not
 	 */
 	public function performUpdate(array &$databaseQueries, &$customMessages) {
-		$GLOBALS['TYPO3_DB']->exec_TRUNCATEquery('sys_file_processedfile');
+		$GLOBALS['TYPO3_DB']->executeTruncateQuery('sys_file_processedfile');
 		$databaseQueries[] = $GLOBALS['TYPO3_DB']->debug_lastBuiltQuery;
 		$this->markWizardAsDone();
 		return TRUE;

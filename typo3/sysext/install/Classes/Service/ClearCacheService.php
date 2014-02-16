@@ -27,6 +27,7 @@ namespace TYPO3\CMS\Install\Service;
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
 
+use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 /**
@@ -65,11 +66,11 @@ class ClearCacheService {
 
 		// Get all table names starting with 'cf_' and truncate them
 		$database = $this->getDatabaseInstance();
-		$tables = $database->admin_get_tables();
+		$tables = $database->adminGetTables();
 		foreach ($tables as $table) {
 			$tableName = $table['Name'];
 			if (substr($tableName, 0, 3) === 'cf_') {
-				$database->exec_TRUNCATEquery($tableName);
+				$database->executeTruncateQuery($tableName);
 			}
 		}
 
@@ -106,7 +107,11 @@ class ClearCacheService {
 		static $database;
 		if (!is_object($database)) {
 			/** @var \TYPO3\CMS\Core\Database\DatabaseConnection $database */
-			$database = $this->objectManager->get('TYPO3\\CMS\\Core\\Database\\DatabaseConnection');
+			if (ExtensionManagementUtility::isLoaded('doctrine_dbal')) {
+				$database = $this->objectManager->get('TYPO3\\DoctrineDbal\\Database\\DatabaseConnection');
+			} else {
+				$database = $this->objectManager->get('TYPO3\\CMS\\Core\\Database\\DatabaseConnection');
+			}
 			$database->setDatabaseUsername($GLOBALS['TYPO3_CONF_VARS']['DB']['username']);
 			$database->setDatabasePassword($GLOBALS['TYPO3_CONF_VARS']['DB']['password']);
 			$database->setDatabaseHost($GLOBALS['TYPO3_CONF_VARS']['DB']['host']);

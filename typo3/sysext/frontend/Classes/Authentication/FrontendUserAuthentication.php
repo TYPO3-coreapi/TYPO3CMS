@@ -110,9 +110,18 @@ class FrontendUserAuthentication extends \TYPO3\CMS\Core\Authentication\Abstract
 	protected $sessionDataTimestamp = NULL;
 
 	/**
+	 * @var \TYPO3\DoctrineDbal\Database\DatabaseConnection
+	 */
+	protected $db;
+
+	/**
 	 * Default constructor.
 	 */
 	public function __construct() {
+		// Disable cookie by default, will be activated if saveSessionData() is called,
+		// a user is logging-in or an existing session is found
+		$this->dontSetCookie = TRUE;
+
 		$this->session_table = 'fe_sessions';
 		$this->name = self::getCookieName();
 		$this->get_name = 'ftu';
@@ -137,6 +146,7 @@ class FrontendUserAuthentication extends \TYPO3\CMS\Core\Authentication\Abstract
 		$this->sendNoCacheHeaders = FALSE;
 		$this->getFallBack = TRUE;
 		$this->getMethodEnabled = TRUE;
+		$this->db = $GLOBALS['TYPO3_DB'];
 	}
 
 	/**
@@ -160,11 +170,11 @@ class FrontendUserAuthentication extends \TYPO3\CMS\Core\Authentication\Abstract
 	 * @todo Define visibility
 	 */
 	public function start() {
-		if (intval($this->auth_timeout_field) > 0 && intval($this->auth_timeout_field) < $this->lifetime) {
+		if ((int)$this->auth_timeout_field > 0 && (int)$this->auth_timeout_field < $this->lifetime) {
 			// If server session timeout is non-zero but less than client session timeout: Copy this value instead.
 			$this->auth_timeout_field = $this->lifetime;
 		}
-		$this->sessionDataLifetime = intval($GLOBALS['TYPO3_CONF_VARS']['FE']['sessionDataLifetime']);
+		$this->sessionDataLifetime = (int)$GLOBALS['TYPO3_CONF_VARS']['FE']['sessionDataLifetime'];
 		if ($this->sessionDataLifetime <= 0) {
 			$this->sessionDataLifetime = 86400;
 		}
@@ -237,6 +247,19 @@ class FrontendUserAuthentication extends \TYPO3\CMS\Core\Authentication\Abstract
 		$loginData['permanent'] = $isPermanent;
 		$this->is_permanent = $isPermanent;
 		return $loginData;
+	}
+
+	/**
+	 * Creates a user session record and returns its values.
+	 * However, as the FE user cookie is normally not set, this has to be done
+	 * before the parent class is doing the rest.
+	 *
+	 * @param array $tempuser User data array
+	 * @return array The session data for the newly created session.
+	 */
+	public function createUserSession($tempuser) {
+		$this->setSessionCookie();
+		return parent::createUserSession($tempuser);
 	}
 
 	/**
@@ -326,7 +349,7 @@ class FrontendUserAuthentication extends \TYPO3\CMS\Core\Authentication\Abstract
 			ksort($this->groupData['uid']);
 			ksort($this->groupData['pid']);
 		}
-		return count($this->groupData['uid']) ? count($this->groupData['uid']) : 0;
+		return count($this->groupData['uid']) ?: 0;
 	}
 
 	/**
@@ -367,13 +390,14 @@ class FrontendUserAuthentication extends \TYPO3\CMS\Core\Authentication\Abstract
 	public function fetchSessionData() {
 		// Gets SesData if any AND if not already selected by session fixation check in ->isExistingSessionRecord()
 		if ($this->id && !count($this->sesData)) {
-			$statement = $GLOBALS['TYPO3_DB']->prepare_SELECTquery('*', 'fe_session_data', 'hash = :hash');
-			$statement->execute(array(':hash' => $this->id));
-			if (($sesDataRow = $statement->fetch()) !== FALSE) {
+			$statement = $GLOBALS['TYPO3_DB']->preparedSelectQuery('*', 'fe_session_data', 'hash = :hash');
+			$statement->bindValue(':hash', $this->id);
+			$statement->execute();
+			if (($sesDataRow = $statement->fetch(\PDO::FETCH_ASSOC)) !== FALSE) {
 				$this->sesData = unserialize($sesDataRow['content']);
 				$this->sessionDataTimestamp = $sesDataRow['tstamp'];
 			}
-			$statement->free();
+			$statement->closeCursor();
 		}
 	}
 
@@ -396,6 +420,10 @@ class FrontendUserAuthentication extends \TYPO3\CMS\Core\Authentication\Abstract
 			if (empty($this->sesData)) {
 				// Remove session-data
 				$this->removeSessionData();
+				// Remove cookie if not logged in as the session data is removed as well
+				if (empty($this->user['uid'])) {
+					$this->removeCookie($this->name);
+				}
 			} elseif ($this->sessionDataTimestamp === NULL) {
 				// Write new session-data
 				$insertFields = array(
@@ -405,6 +433,8 @@ class FrontendUserAuthentication extends \TYPO3\CMS\Core\Authentication\Abstract
 				);
 				$this->sessionDataTimestamp = $GLOBALS['EXEC_TIME'];
 				$GLOBALS['TYPO3_DB']->exec_INSERTquery('fe_session_data', $insertFields);
+				// Now set the cookie (= fix the session)
+				$this->setSessionCookie();
 			} else {
 				// Update session data
 				$updateFields = array(
@@ -423,7 +453,21 @@ class FrontendUserAuthentication extends \TYPO3\CMS\Core\Authentication\Abstract
 	 * @return void
 	 */
 	public function removeSessionData() {
-		$GLOBALS['TYPO3_DB']->exec_DELETEquery('fe_session_data', 'hash=' . $GLOBALS['TYPO3_DB']->fullQuoteStr($this->id, 'fe_session_data'));
+		$GLOBALS['TYPO3_DB']->executeDeleteQuery('fe_session_data', array('hash' => $this->id));
+	}
+
+	/**
+	 * Log out current user!
+	 * Removes the current session record, sets the internal ->user array to a blank string
+	 * Thereby the current user (if any) is effectively logged out!
+	 * Additionally the cookie is removed
+	 *
+	 * @return void
+	 */
+	public function logoff() {
+		parent::logoff();
+		// Remove the cookie on log-off
+		$this->removeCookie($this->name);
 	}
 
 	/**
@@ -433,8 +477,11 @@ class FrontendUserAuthentication extends \TYPO3\CMS\Core\Authentication\Abstract
 	 * @return void
 	 */
 	public function gc() {
-		$timeoutTimeStamp = intval($GLOBALS['EXEC_TIME'] - $this->sessionDataLifetime);
-		$GLOBALS['TYPO3_DB']->exec_DELETEquery('fe_session_data', 'tstamp < ' . $timeoutTimeStamp);
+		$timeoutTimeStamp = (int)($GLOBALS['EXEC_TIME'] - $this->sessionDataLifetime);
+		$query = $GLOBALS['TYPO3_DB']->createDeleteQuery();
+		$query->delete('fe_session_data')
+				->where($query->expr->lessThan('tstamp', $query->bindValue($timeoutTimeStamp, NULL, \PDO::PARAM_INT)));
+		$query->execute();
 		parent::gc();
 	}
 
@@ -532,10 +579,10 @@ class FrontendUserAuthentication extends \TYPO3\CMS\Core\Authentication\Abstract
 	 * @todo Define visibility
 	 */
 	public function record_registration($recs, $maxSizeOfSessionData = 0) {
-		// Storing value ONLY if there is a confirmed cookie set (->cookieID),
+		// Storing value ONLY if there is a confirmed cookie set,
 		// otherwise a shellscript could easily be spamming the fe_sessions table
 		// with bogus content and thus bloat the database
-		if (!$maxSizeOfSessionData || $this->cookieId) {
+		if (!$maxSizeOfSessionData || $this->isCookieSet()) {
 			if ($recs['clear_all']) {
 				$this->setKey('ses', 'recs', array());
 			}
@@ -572,18 +619,18 @@ class FrontendUserAuthentication extends \TYPO3\CMS\Core\Authentication\Abstract
 		$count = parent::isExistingSessionRecord($id);
 		// Check if there are any fe_session_data records for the session ID the client claims to have
 		if ($count == FALSE) {
-			$statement = $GLOBALS['TYPO3_DB']->prepare_SELECTquery('content,tstamp', 'fe_session_data', 'hash = :hash');
-			$res = $statement->execute(array(':hash' => $id));
+			$statement = $GLOBALS['TYPO3_DB']->preparedSelectQuery('content,tstamp', 'fe_session_data', 'hash = :hash');
+			$statement->bindValue(':hash', $id);
+			$res = $statement->execute();
 			if ($res !== FALSE) {
-				if ($sesDataRow = $statement->fetch()) {
+				if ($sesDataRow = $statement->fetch(\PDO::FETCH_ASSOC)) {
 					$count = TRUE;
 					$this->sesData = unserialize($sesDataRow['content']);
 					$this->sessionDataTimestamp = $sesDataRow['tstamp'];
 				}
-				$statement->free();
+				$statement->closeCursor();
 			}
 		}
 		return $count;
 	}
-
 }

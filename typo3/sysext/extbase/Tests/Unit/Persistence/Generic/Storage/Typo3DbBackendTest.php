@@ -1,5 +1,6 @@
 <?php
 namespace TYPO3\CMS\Extbase\Tests\Unit\Persistence\Generic\Storage;
+use TYPO3\CMS\Core\Utility\ExtensionManagementUtility;
 
 /***************************************************************
  *  Copyright notice
@@ -430,7 +431,11 @@ class Typo3DbBackendTest extends \TYPO3\CMS\Extbase\Tests\Unit\BaseTestCase {
 		$expectedStatement = 'SELECT * FROM tx_foo_table WHERE column_name=?';
 		$expectedParameters = array('plainPropertyValue');
 		$expectedUid = 52;
-		$mockDataBaseHandle = $this->getMock('TYPO3\CMS\Core\Database\DatabaseConnection', array('sql_query', 'sql_fetch_assoc'), array(), '', FALSE);
+		if (ExtensionManagementUtility::isLoaded('doctrine_dbal')) {
+			$mockDataBaseHandle = $this->getMock('TYPO3\DoctrineDbal\Database\DatabaseConnection', array('sql_query', 'sql_fetch_assoc'), array(), '', FALSE);
+		} else {
+			$mockDataBaseHandle = $this->getMock('TYPO3\CMS\Core\Database\DatabaseConnection', array('sql_query', 'sql_fetch_assoc'), array(), '', FALSE);
+		}
 		$mockDataBaseHandle->expects($this->once())->method('sql_query')->will($this->returnValue('resource'));
 		$mockDataBaseHandle->expects($this->any())->method('sql_fetch_assoc')->with('resource')->will($this->returnValue(array('uid' => $expectedUid)));
 		$mockTypo3DbBackend = $this->getAccessibleMock('TYPO3\\CMS\\Extbase\\Persistence\\Generic\\Storage\\Typo3DbBackend', array('getPlainValue', 'checkSqlErrors', 'replacePlaceholders', 'addVisibilityConstraintStatement'), array(), '', FALSE);

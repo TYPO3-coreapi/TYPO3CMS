@@ -148,9 +148,9 @@ class DatabaseIntegrityCheck {
 	 */
 	public function genTree($theID, $depthData, $versions = FALSE) {
 		if ($versions) {
-			$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid,title,doktype,deleted,t3ver_wsid,t3ver_id,t3ver_count' . (\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::isLoaded('cms') ? ',hidden' : ''), 'pages', 'pid=-1 AND t3ver_oid=' . intval($theID) . ' ' . (!$this->genTree_includeDeleted ? 'AND deleted=0' : '') . $this->perms_clause, '', 'sorting');
+			$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid,title,doktype,deleted,t3ver_wsid,t3ver_id,t3ver_count' . (\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::isLoaded('cms') ? ',hidden' : ''), 'pages', 'pid=-1 AND t3ver_oid=' . (int)$theID . ' ' . (!$this->genTree_includeDeleted ? 'AND deleted=0' : '') . $this->perms_clause, '', 'sorting');
 		} else {
-			$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid,title,doktype,deleted' . (\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::isLoaded('cms') ? ',hidden' : ''), 'pages', 'pid=' . intval($theID) . ' ' . (!$this->genTree_includeDeleted ? 'AND deleted=0' : '') . $this->perms_clause, '', 'sorting');
+			$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery('uid,title,doktype,deleted' . (\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::isLoaded('cms') ? ',hidden' : ''), 'pages', 'pid=' . (int)$theID . ' ' . (!$this->genTree_includeDeleted ? 'AND deleted=0' : '') . $this->perms_clause, '', 'sorting');
 		}
 		// Traverse the records selected:
 		$a = 0;
@@ -222,14 +222,14 @@ class DatabaseIntegrityCheck {
 			$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery(
 				BackendUtility::getCommonSelectFields($table),
 				$table,
-				'pid=-1 AND t3ver_oid=' . intval($theID) . (!$this->genTree_includeDeleted ? BackendUtility::deleteClause($table) : '')
+				'pid=-1 AND t3ver_oid=' . (int)$theID . (!$this->genTree_includeDeleted ? BackendUtility::deleteClause($table) : '')
 			);
 		} else {
 			// Select all records from table pointing to this page:
 			$res = $GLOBALS['TYPO3_DB']->exec_SELECTquery(
 				BackendUtility::getCommonSelectFields($table),
 				$table,
-				'pid=' . intval($theID) . (!$this->genTree_includeDeleted ? BackendUtility::deleteClause($table) : '')
+				'pid=' . (int)$theID . (!$this->genTree_includeDeleted ? BackendUtility::deleteClause($table) : '')
 			);
 		}
 		// Traverse selected:
@@ -345,7 +345,7 @@ class DatabaseIntegrityCheck {
 			if ($GLOBALS['TCA'][$table]['ctrl']['enablecolumns']['disabled']) {
 				$updateFields[$GLOBALS['TCA'][$table]['ctrl']['enablecolumns']['disabled']] = 1;
 			}
-			$GLOBALS['TYPO3_DB']->exec_UPDATEquery($table, 'uid=' . intval($uid), $updateFields);
+			$GLOBALS['TYPO3_DB']->exec_UPDATEquery($table, 'uid=' . (int)$uid, $updateFields);
 			return TRUE;
 		} else {
 			return FALSE;
@@ -469,7 +469,7 @@ class DatabaseIntegrityCheck {
 				if ($GLOBALS['TCA'][$table] && trim($field_list)) {
 					$fieldArr = explode(',', $field_list);
 					if (\TYPO3\CMS\Core\Utility\ExtensionManagementUtility::isLoaded('dbal')) {
-						$fields = $GLOBALS['TYPO3_DB']->admin_get_fields($table);
+						$fields = $GLOBALS['TYPO3_DB']->adminGetFields($table);
 						$field = array_shift($fieldArr);
 						$cl_fl = $GLOBALS['TYPO3_DB']->MetaType($fields[$field]['type'], $table) == 'I' || $GLOBALS['TYPO3_DB']->MetaType($fields[$field]['type'], $table) == 'N' || $GLOBALS['TYPO3_DB']->MetaType($fields[$field]['type'], $table) == 'R' ? $field . '<>0' : $field . '<>\'\'';
 						foreach ($fieldArr as $field) {

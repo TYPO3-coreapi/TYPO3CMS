@@ -33,16 +33,12 @@ class TypoScriptFrontendControllerTest extends \TYPO3\CMS\Core\Tests\UnitTestCas
 	/**
 	 * @var \PHPUnit_Framework_MockObject_MockObject|\TYPO3\CMS\Core\Tests\AccessibleObjectInterface|\TYPO3\CMS\Frontend\Controller\TypoScriptFrontendController
 	 */
-	private $fixture;
+	protected $fixture;
 
 	public function setUp() {
 		$this->fixture = $this->getAccessibleMock('\\TYPO3\\CMS\\Frontend\\Controller\\TypoScriptFrontendController', array('dummy'), array(), '', FALSE);
 		$this->fixture->TYPO3_CONF_VARS = $GLOBALS['TYPO3_CONF_VARS'];
 		$this->fixture->TYPO3_CONF_VARS['SYS']['encryptionKey'] = '170928423746123078941623042360abceb12341234231';
-	}
-
-	public function tearDown() {
-		unset($this->fixture);
 	}
 
 	////////////////////////////////
@@ -78,7 +74,8 @@ class TypoScriptFrontendControllerTest extends \TYPO3\CMS\Core\Tests\UnitTestCas
 			'INTincScript_process',
 			'INTincScript_includeLibs',
 			'INTincScript_loadJSCode',
-			'setAbsRefPrefix'
+			'setAbsRefPrefix',
+		    'regeneratePageTitle'
 		), array(), '', FALSE);
 		$tsfe->expects($this->exactly(2))->method('INTincScript_process')->will($this->returnCallback(array($this, 'INTincScript_processCallback')));
 		$tsfe->content = file_get_contents(__DIR__ . '/Fixtures/renderedPage.html');

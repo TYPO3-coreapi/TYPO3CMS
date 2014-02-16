@@ -42,13 +42,6 @@ class ElementConditionMatcherTest extends \TYPO3\CMS\Core\Tests\UnitTestCase {
 	}
 
 	/**
-	 * Tears down this test case.
-	 */
-	protected function tearDown() {
-		unset($this->fixture);
-	}
-
-	/**
 	 * Returns data sets for the test matchConditionStrings
 	 * Each dataset is an array with the following elements:
 	 * - the condition string
@@ -170,19 +163,19 @@ class ElementConditionMatcherTest extends \TYPO3\CMS\Core\Tests\UnitTestCase {
 				'vDEF',
 				TRUE,
 			),
-			'Field is value for default languge without flexform' => array(
+			'Field is value for default language without flexform' => array(
 				'HIDE_L10N_SIBLINGS',
 				array(),
 				NULL,
 				FALSE,
 			),
-			'Field is value for default languge with flexform' => array(
+			'Field is value for default language with flexform' => array(
 				'HIDE_L10N_SIBLINGS',
 				array(),
 				'vDEF',
 				TRUE,
 			),
-			'Field is value for default languge with sibling' => array(
+			'Field is value for default language with sibling' => array(
 				'HIDE_L10N_SIBLINGS',
 				array(),
 				'vEN',

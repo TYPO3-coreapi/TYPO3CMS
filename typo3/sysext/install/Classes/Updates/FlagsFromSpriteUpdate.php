@@ -71,16 +71,16 @@ class FlagsFromSpriteUpdate extends AbstractUpdate {
 			$sql = 'UPDATE sys_language SET flag=REPLACE(flag, \'.gif\', \'\') WHERE flag LIKE \'%.gif\'';
 			$res = $GLOBALS['TYPO3_DB']->sql_query($sql);
 			$dbQueries[] = $sql;
-			if ($GLOBALS['TYPO3_DB']->sql_error()) {
-				$customMessages = 'SQL-ERROR: ' . htmlspecialchars($GLOBALS['TYPO3_DB']->sql_error());
+			if ($GLOBALS['TYPO3_DB']->sqlErrorMessage()) {
+				$customMessages = 'SQL-ERROR: ' . htmlspecialchars($GLOBALS['TYPO3_DB']->sqlErrorMessage());
 			} else {
 				$result = TRUE;
 			}
 			$sql = 'UPDATE sys_language SET flag=\'multiple\' WHERE flag=\'multi-language\'';
 			$res = $GLOBALS['TYPO3_DB']->sql_query($sql);
 			$dbQueries[] = $sql;
-			if ($GLOBALS['TYPO3_DB']->sql_error()) {
-				$customMessages = 'SQL-ERROR: ' . htmlspecialchars($GLOBALS['TYPO3_DB']->sql_error());
+			if ($GLOBALS['TYPO3_DB']->sqlErrorMessage()) {
+				$customMessages = 'SQL-ERROR: ' . htmlspecialchars($GLOBALS['TYPO3_DB']->sqlErrorMessage());
 			} else {
 				$result = TRUE;
 			}

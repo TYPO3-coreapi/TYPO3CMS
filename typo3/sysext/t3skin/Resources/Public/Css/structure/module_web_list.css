@@ -85,7 +85,7 @@ table.typo3-dblist tr td.col-icon a img.collapseIcon {
 table.typo3-dblist tr td.col-title {
 	overflow: hidden;
 	vertical-align: middle;
-	width: 300px;
+	width: 350px;
 }
 
 table.typo3-dblist tr td.col-title.localization {
@@ -106,10 +106,6 @@ table.typo3-dblist tr td.col-clipboard {
 
 table#typo3-dblist-fieldSelect {
 	margin-top: 20px;
-}
-
-table#typo3-dblist-fieldSelect input[type="submit"] {
-	margin-left: 10px;
 }
 
 table.typo3-dblist-overview {
@@ -142,7 +138,7 @@ div#typo3-newRecordLink,
 div.typo3-newRecordLink,
 div.typo3-localizationLink,
 div.typo3-synchronizationLink {
-	margin: 5px 0px 5px 0px;
+	display: inline;
 }
 
 div#typo3-newRecordLink img,
@@ -191,12 +187,6 @@ div#typo3-dblist-pagination span.bar {
 
 #typo3-dblist-search-container {
 	position: relative;
-}
-
-#typo3-dblist-search input[type="submit"] {
-	height: 19px;
-	margin-left: 5px;
-	padding: 0 4px 2px 4px;
 }
 
 .t3-list-table-header-icon-down {

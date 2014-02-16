@@ -28,15 +28,7 @@ namespace TYPO3\CMS\Extbase\Tests\Unit\Utility;
  */
 class ExtensionUtilityTest extends \TYPO3\CMS\Core\Tests\UnitTestCase {
 
-	/**
-	 * A backup of the global database
-	 *
-	 * @var \TYPO3\CMS\Core\Database\DatabaseConnection
-	 */
-	protected $databaseBackup = NULL;
-
 	public function setUp() {
-		$this->databaseBackup = $GLOBALS['TYPO3_DB'];
 		$GLOBALS['TYPO3_DB'] = $this->getMock('TYPO3\\CMS\\Core\\Database\\DatabaseConnection', array('fullQuoteStr', 'exec_SELECTgetRows'));
 
 		$GLOBALS['TSFE'] = new \stdClass();
@@ -71,10 +63,6 @@ class ExtensionUtilityTest extends \TYPO3\CMS\Core\Tests\UnitTestCase {
 		);
 	}
 
-	public function tearDown() {
-		$GLOBALS['TYPO3_DB'] = $this->databaseBackup;
-	}
-
 	/**
 	 * @test
 	 * @see \TYPO3\CMS\Extbase\Utility\ExtensionUtility::registerPlugin
@@ -101,29 +89,6 @@ class ExtensionUtilityTest extends \TYPO3\CMS\Core\Tests\UnitTestCase {
 		$staticTypoScript = $GLOBALS['TYPO3_CONF_VARS']['FE']['defaultTypoScript_setup.']['43'];
 		$defaultTypoScript = $GLOBALS['TYPO3_CONF_VARS']['FE']['defaultTypoScript_setup'];
 		$this->assertContains('tt_content.list.20.myextension_pi1 = USER', $staticTypoScript);
-		$this->assertContains('
-plugin.tx_myextension {
-	settings {
-	}
-	persistence {
-		storagePid =
-		classes {
-		}
-	}
-	view {
-		templateRootPaths {
-			#example: fooKey = EXT:bar/foo
-		}
-		layoutRootPaths {
-			#example: fooKey = EXT:bar/foo
-		}
-		partialRootPaths {
-			#example: fooKey = EXT:bar/foo
-		}
-		 # with defaultPid you can specify the default page uid of this plugin. If you set this to the string "auto" the target page will be determined automatically. Defaults to an empty string that expects the target page to be the current page.
-		defaultPid =
-	}
-}', $defaultTypoScript);
 	}
 
 	/**

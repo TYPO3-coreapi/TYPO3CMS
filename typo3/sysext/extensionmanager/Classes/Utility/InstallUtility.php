@@ -120,7 +120,7 @@ class InstallUtility implements \TYPO3\CMS\Core\SingletonInterface {
 			$this->loadExtension($extensionKey);
 		}
 		$this->reloadCaches();
-		$this->processCachingFrameworkUpdates();
+		$this->processRuntimeDatabaseUpdates($extensionKey);
 		$this->saveDefaultConfiguration($extension['key']);
 		if ($extension['clearcacheonload']) {
 			$GLOBALS['typo3CacheManager']->flushCaches();
@@ -240,20 +240,40 @@ class InstallUtility implements \TYPO3\CMS\Core\SingletonInterface {
 	}
 
 	/**
-	 * Gets all registered caches and creates required caching framework tables.
+	 * Gets all database updates due to runtime configuration, like caching framework or
+	 * category api for example
 	 *
-	 * @return void
+	 * @param string $extensionKey
 	 */
-	protected function processCachingFrameworkUpdates() {
-		$extTablesSqlContent = '';
-
-		// @TODO: This should probably moved to TYPO3\CMS\Core\Cache\Cache->getDatabaseTableDefinitions ?!
-		$GLOBALS['typo3CacheManager']->setCacheConfigurations($GLOBALS['TYPO3_CONF_VARS']['SYS']['caching']['cacheConfigurations']);
-		$extTablesSqlContent .= \TYPO3\CMS\Core\Cache\Cache::getDatabaseTableDefinitions();
-
-		if ($extTablesSqlContent !== '') {
-			$this->updateDbWithExtTablesSql($extTablesSqlContent);
+	protected function processRuntimeDatabaseUpdates($extensionKey) {
+		$sqlString = $this->emitTablesDefinitionIsBeingBuiltSignal($extensionKey);
+		if (!empty($sqlString)) {
+			$this->updateDbWithExtTablesSql(implode(LF . LF . LF . LF, $sqlString));
 		}
+	}
+
+	/**
+	 * Emits a signal to manipulate the tables definitions
+	 *
+	 * @param string $extensionKey
+	 * @return mixed
+	 * @throws \TYPO3\CMS\Extensionmanager\Exception\ExtensionManagerException
+	 */
+	protected function emitTablesDefinitionIsBeingBuiltSignal($extensionKey) {
+		$signalReturn = $this->signalSlotDispatcher->dispatch(__CLASS__, 'tablesDefinitionIsBeingBuilt', array('sqlString' => array(), 'extensionKey' => $extensionKey));
+		$sqlString = $signalReturn['sqlString'];
+		if (!is_array($sqlString)) {
+			throw new \TYPO3\CMS\Extensionmanager\Exception\ExtensionManagerException(
+				sprintf(
+					'The signal %s of class %s returned a value of type %s, but array was expected.',
+					'tablesDefinitionIsBeingBuilt',
+					__CLASS__,
+					gettype($sqlString)
+				),
+				1382360258
+			);
+		}
+		return $sqlString;
 	}
 
 	/**
@@ -263,7 +283,7 @@ class InstallUtility implements \TYPO3\CMS\Core\SingletonInterface {
 	 */
 	public function reloadCaches() {
 		$GLOBALS['typo3CacheManager']->flushCachesInGroup('system');
-		\TYPO3\CMS\Core\Core\Bootstrap::getInstance()->reloadTypo3LoadedExtAndClassLoaderAndExtLocalconf();
+		\TYPO3\CMS\Core\Core\Bootstrap::getInstance()->reloadTypo3LoadedExtAndClassLoaderAndExtLocalconf()->loadExtensionTables();
 	}
 
 	/**
@@ -291,13 +311,13 @@ class InstallUtility implements \TYPO3\CMS\Core\SingletonInterface {
 			$diff = $this->installToolSqlParser->getDatabaseExtra($fieldDefinitionsFromFile, $fieldDefinitionsFromCurrentDatabase);
 			$updateStatements = $this->installToolSqlParser->getUpdateSuggestions($diff);
 			foreach ((array) $updateStatements['add'] as $string) {
-				$GLOBALS['TYPO3_DB']->admin_query($string);
+				$GLOBALS['TYPO3_DB']->adminQuery($string);
 			}
 			foreach ((array) $updateStatements['change'] as $string) {
-				$GLOBALS['TYPO3_DB']->admin_query($string);
+				$GLOBALS['TYPO3_DB']->adminQuery($string);
 			}
 			foreach ((array) $updateStatements['create_table'] as $string) {
-				$GLOBALS['TYPO3_DB']->admin_query($string);
+				$GLOBALS['TYPO3_DB']->adminQuery($string);
 			}
 		}
 	}
@@ -313,12 +333,12 @@ class InstallUtility implements \TYPO3\CMS\Core\SingletonInterface {
 		list($statementsPerTable, $insertCount) = $this->installToolSqlParser->getCreateTables($statements, 1);
 		// Traverse the tables
 		foreach ($statementsPerTable as $table => $query) {
-			$GLOBALS['TYPO3_DB']->admin_query('DROP TABLE IF EXISTS ' . $table);
-			$GLOBALS['TYPO3_DB']->admin_query($query);
+			$GLOBALS['TYPO3_DB']->adminQuery('DROP TABLE IF EXISTS ' . $table);
+			$GLOBALS['TYPO3_DB']->adminQuery($query);
 			if ($insertCount[$table]) {
 				$insertStatements = $this->installToolSqlParser->getTableInsertStatements($statements, $table);
 				foreach ($insertStatements as $statement) {
-					$GLOBALS['TYPO3_DB']->admin_query($statement);
+					$GLOBALS['TYPO3_DB']->adminQuery($statement);
 				}
 			}
 		}

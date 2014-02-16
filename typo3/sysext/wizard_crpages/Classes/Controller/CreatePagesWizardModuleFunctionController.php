@@ -101,7 +101,7 @@ class CreatePagesWizardModuleFunctionController extends \TYPO3\CMS\Backend\Modul
 			if (is_array($data['pages'])) {
 				if (GeneralUtility::_GP('createInListEnd')) {
 					$endI = end($menuItems);
-					$thePid = -intval($endI['uid']);
+					$thePid = -(int)$endI['uid'];
 					if (!$thePid) {
 						$thePid = $this->pObj->id;
 					}
@@ -186,7 +186,6 @@ class CreatePagesWizardModuleFunctionController extends \TYPO3\CMS\Backend\Modul
 				#formFieldContainer {float: left; margin: 0 0 10px 0;}
 				.clearLeft {clear: left;}
 				#formFieldContainer label {width: 70px; display: inline-block;}
-				#formFieldContainer input {margin:4px 2px; padding:1px; vertical-align:middle}
 				#formFieldContainer span {padding: 0 3px;}
 				');
 			}

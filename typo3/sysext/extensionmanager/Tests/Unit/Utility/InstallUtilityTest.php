@@ -64,6 +64,7 @@ class InstallUtilityTest extends \TYPO3\CMS\Extbase\Tests\Unit\BaseTestCase {
 				'loadExtension',
 				'unloadExtension',
 				'processDatabaseUpdates',
+				'processRuntimeDatabaseUpdates',
 				'reloadCaches',
 				'processCachingFrameworkUpdates',
 				'saveDefaultConfiguration',
@@ -97,6 +98,7 @@ class InstallUtilityTest extends \TYPO3\CMS\Extbase\Tests\Unit\BaseTestCase {
 		foreach ($this->fakedExtensions as $extension => $dummy) {
 			\TYPO3\CMS\Core\Utility\GeneralUtility::rmdir(PATH_site . 'typo3temp/' . $extension, TRUE);
 		}
+		parent::tearDown();
 	}
 
 	/**
@@ -119,10 +121,10 @@ class InstallUtilityTest extends \TYPO3\CMS\Extbase\Tests\Unit\BaseTestCase {
 	/**
 	 * @test
 	 */
-	public function installCallsProcessDatabaseUpdates() {
+	public function installCallsProcessRuntimeDatabaseUpdates() {
 		$this->installMock->expects($this->once())
-			->method('processDatabaseUpdates')
-			->with($this->extensionData);
+			->method('processRuntimeDatabaseUpdates')
+			->with($this->extensionKey);
 
 		$this->installMock->install($this->extensionKey);
 	}
@@ -130,17 +132,7 @@ class InstallUtilityTest extends \TYPO3\CMS\Extbase\Tests\Unit\BaseTestCase {
 	/**
 	 * @test
 	 */
-	public function installCallsProcessCachingFrameworkUpdates() {
-		$this->installMock->expects($this->once())
-			->method('processCachingFrameworkUpdates');
-
-		$this->installMock->install($this->extensionKey);
-	}
-
-	/**
-	 * @test
-	 */
-	public function installCallsLoadExtenion() {
+	public function installCallsLoadExtension() {
 		$this->installMock->expects($this->once())->method('loadExtension');
 		$this->installMock->install($this->extensionKey);
 	}

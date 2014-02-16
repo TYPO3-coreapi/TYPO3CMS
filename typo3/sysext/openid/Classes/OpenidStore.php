@@ -24,6 +24,8 @@ namespace TYPO3\CMS\Openid;
  *  This copyright notice MUST APPEAR in all copies of the script!
  ***************************************************************/
 
+require_once \TYPO3\CMS\Core\Utility\ExtensionManagementUtility::extPath('openid') . 'lib/php-openid/Auth/OpenID/Interface.php';
+
 /**
  * This class is a TYPO3-specific OpenID store.
  *
@@ -39,7 +41,7 @@ class OpenidStore extends \Auth_OpenID_OpenIDStore {
 	const NONCE_STORAGE_TIME = 864000;
 
 	/**
-	 * @var \TYPO3\CMS\Core\Database\DatabaseConnection
+	 * @var \TYPO3\DoctrineDbal\Database\DatabaseConnection
 	 */
 	protected $databaseConnection;
 
@@ -74,9 +76,12 @@ class OpenidStore extends \Auth_OpenID_OpenIDStore {
 	 * @return integer A number of removed associations
 	 */
 	public function cleanupAssociations() {
-		$where = sprintf('expires<=%d', time());
-		$this->databaseConnection->exec_DELETEquery(self::ASSOCIATION_TABLE_NAME, $where);
-		return $this->databaseConnection->sql_affected_rows();
+		$query = $this->databaseConnection->createDeleteQuery();
+		$query->delete(self::ASSOCIATION_TABLE_NAME)
+				->where($query->expr->lessThan('expires', $query->bindValue(time())))
+				->execute();
+
+		return $query->getAffectedRows();
 	}
 
 	/**
@@ -116,8 +121,13 @@ class OpenidStore extends \Auth_OpenID_OpenIDStore {
 	 * @return boolean TRUE if the association existed
 	 */
 	public function removeAssociation($serverUrl, $handle) {
-		$where = sprintf('server_url=%s AND assoc_handle=%s', $this->databaseConnection->fullQuoteStr($serverUrl, self::ASSOCIATION_TABLE_NAME), $this->databaseConnection->fullQuoteStr($handle, self::ASSOCIATION_TABLE_NAME));
-		$this->databaseConnection->exec_DELETEquery(self::ASSOCIATION_TABLE_NAME, $where);
+		$this->databaseConnection->executeDeleteQuery(
+			self::ASSOCIATION_TABLE_NAME,
+			array(
+				'server_url' => $serverUrl,
+				'assoc_handle' => $handle
+			)
+		);
 		$deletedCount = $this->databaseConnection->sql_affected_rows();
 		return $deletedCount > 0;
 	}
@@ -128,8 +138,10 @@ class OpenidStore extends \Auth_OpenID_OpenIDStore {
 	 * @return void
 	 */
 	public function cleanupNonces() {
-		$where = sprintf('crdate<%d', time() - self::NONCE_STORAGE_TIME);
-		$this->databaseConnection->exec_DELETEquery(self::NONCE_TABLE_NAME, $where);
+		$query = $this->databaseConnection->createDeleteQuery();
+		$query->delete(self::NONCE_TABLE_NAME)
+				->where($query->expr->lessThan('crdate', $query->bindValue(time() - self::NONCE_STORAGE_TIME)))
+				->execute();
 	}
 
 	/**
@@ -162,8 +174,8 @@ class OpenidStore extends \Auth_OpenID_OpenIDStore {
 	 * @return void
 	 */
 	public function reset() {
-		$this->databaseConnection->exec_TRUNCATEquery(self::ASSOCIATION_TABLE_NAME);
-		$this->databaseConnection->exec_TRUNCATEquery(self::NONCE_TABLE_NAME);
+		$this->databaseConnection->executeTruncateQuery(self::ASSOCIATION_TABLE_NAME);
+		$this->databaseConnection->executeTruncateQuery(self::NONCE_TABLE_NAME);
 	}
 
 	/**

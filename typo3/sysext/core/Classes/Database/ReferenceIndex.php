@@ -81,6 +81,15 @@ class ReferenceIndex {
 	public $hashVersion = 1;
 
 	/**
+	 * @var \TYPO3\DoctrineDbal\Database\DatabaseConnection
+	 */
+	protected $db;
+
+	public function __construct() {
+		$this->db = $GLOBALS['TYPO3_DB'];
+	}
+
+	/**
 	 * Call this function to update the sys_refindex table for a record (even one just deleted)
 	 * NOTICE: Currently, references updated for a deleted-flagged record will not include those from within flexform fields in some cases where the data structure is defined by another record since the resolving process ignores deleted records! This will also result in bad cleaning up in tcemain I think... Anyway, thats the story of flexforms; as long as the DS can change, lots of references can get lost in no time.
 	 *
@@ -100,9 +109,9 @@ class ReferenceIndex {
 			'addedNodes' => 0
 		);
 		// Get current index from Database:
-		$currentRels = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('*', 'sys_refindex', 'tablename=' . $GLOBALS['TYPO3_DB']->fullQuoteStr($table, 'sys_refindex') . ' AND recuid=' . intval($uid), '', '', '', 'hash');
+		$currentRels = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows('*', 'sys_refindex', 'tablename=' . $GLOBALS['TYPO3_DB']->fullQuoteStr($table, 'sys_refindex') . ' AND recuid=' . (int)$uid, '', '', '', 'hash');
 		// First, test to see if the record exists (including deleted-flagged)
-		if (BackendUtility::getRecordRaw($table, 'uid=' . intval($uid), 'uid')) {
+		if (BackendUtility::getRecordRaw($table, 'uid=' . (int)$uid, 'uid')) {
 			// Then, get relations:
 			$relations = $this->generateRefIndexData($table, $uid);
 			if (is_array($relations)) {
@@ -135,7 +144,8 @@ class ReferenceIndex {
 				$result['deletedNodes'] = count($hashList);
 				$result['deletedNodes_hashList'] = implode(',', $hashList);
 				if (!$testOnly) {
-					$GLOBALS['TYPO3_DB']->exec_DELETEquery('sys_refindex', 'hash IN (' . implode(',', $GLOBALS['TYPO3_DB']->fullQuoteArray($hashList, 'sys_refindex')) . ')');
+					$query = $this->db->createDeleteQuery();
+					$query->delete('sys_refindex')->where($query->expr->in('hash', $hashList))->execute();
 				}
 			}
 		}
@@ -154,7 +164,7 @@ class ReferenceIndex {
 	public function generateRefIndexData($table, $uid) {
 		if (isset($GLOBALS['TCA'][$table])) {
 			// Get raw record from DB:
-			$record = $GLOBALS['TYPO3_DB']->exec_SELECTgetSingleRow('*', $table, 'uid=' . intval($uid));
+			$record = $GLOBALS['TYPO3_DB']->exec_SELECTgetSingleRow('*', $table, 'uid=' . (int)$uid);
 			if (is_array($record)) {
 				// Initialize:
 				$this->words_strings = array();
@@ -593,7 +603,7 @@ class ReferenceIndex {
 			if (is_array($refRec)) {
 				if ($GLOBALS['TCA'][$refRec['tablename']]) {
 					// Get that record from database:
-					$record = $GLOBALS['TYPO3_DB']->exec_SELECTgetSingleRow('*', $refRec['tablename'], 'uid=' . intval($refRec['recuid']));
+					$record = $GLOBALS['TYPO3_DB']->exec_SELECTgetSingleRow('*', $refRec['tablename'], 'uid=' . (int)$refRec['recuid']);
 					if (is_array($record)) {
 						// Get all relations from record, filter with fieldname:
 						$dbrels = $this->getRelations($refRec['tablename'], $record, $refRec['field']);
@@ -894,7 +904,13 @@ class ReferenceIndex {
 					echo $Err . LF;
 				}
 				if (!$testOnly) {
-					$GLOBALS['TYPO3_DB']->exec_DELETEquery('sys_refindex', $where);
+					$query = $this->db->createDeleteQuery();
+					$query->delete('sys_refindex')->where(
+						$query->expr->logicalAnd(
+							$query->expr->equals('tablename', $query->bindValue($tableName)),
+							$query->expr->notIn('recuid', $uidList)
+						)
+					)->execute();
 				}
 			}
 		}
@@ -908,7 +924,8 @@ class ReferenceIndex {
 				echo $Err . LF;
 			}
 			if (!$testOnly) {
-				$GLOBALS['TYPO3_DB']->exec_DELETEquery('sys_refindex', $where);
+				$query = $this->db->createDeleteQuery();
+				$query->delete('sys_refindex')->where($query->expr->notIn('tablename', $tableName))->execute();
 			}
 		}
 		$testedHowMuch = $recCount . ' records from ' . $tableCount . ' tables were checked/updated.' . LF;
@@ -922,5 +939,4 @@ class ReferenceIndex {
 		}
 		return array($headerContent, $bodyContent, count($errors));
 	}
-
 }

@@ -50,17 +50,38 @@ class FunctionalTestCaseBootstrapUtility {
 	protected $originalDatabaseName;
 
 	/**
+	 * @var array These extensions are always loaded
+	 */
+	protected $defaultActivatedCoreExtensions = array(
+		'core',
+		'backend',
+		'frontend',
+		'cms',
+		'lang',
+		'sv',
+		'extensionmanager',
+		'recordlist',
+		'extbase',
+		'fluid',
+		'cshmanual',
+		'install',
+		'saltedpasswords'
+	);
+
+	/**
 	 * Set up creates a test instance and database.
 	 *
 	 * @param string $testCaseClassName Name of test case class
 	 * @param array $coreExtensionsToLoad Array of core extensions to load
 	 * @param array $testExtensionsToLoad Array of test extensions to load
+	 * @param array $pathsToLinkInTestInstance Array of source => destination path pairs to be linked
 	 * @return void
 	 */
 	public function setUp(
 		$testCaseClassName,
 		array $coreExtensionsToLoad,
-		array $testExtensionsToLoad
+		array $testExtensionsToLoad,
+		array $pathsToLinkInTestInstance
 	) {
 		$this->setUpIdentifier($testCaseClassName);
 		$this->setUpInstancePath();
@@ -68,12 +89,13 @@ class FunctionalTestCaseBootstrapUtility {
 		$this->setUpInstanceDirectories();
 		$this->setUpInstanceCoreLinks();
 		$this->linkTestExtensionsToInstance($testExtensionsToLoad);
+		$this->linkPathsInTestInstance($pathsToLinkInTestInstance);
 		$this->setUpLocalConfiguration();
 		$this->setUpPackageStates($coreExtensionsToLoad, $testExtensionsToLoad);
 		$this->setUpBasicTypo3Bootstrap();
 		$this->setUpTestDatabase();
-		$this->createDatabaseStructure();
 		\TYPO3\CMS\Core\Core\Bootstrap::getInstance()->loadExtensionTables(TRUE);
+		$this->createDatabaseStructure();
 	}
 
 	/**
@@ -202,6 +224,36 @@ class FunctionalTestCaseBootstrapUtility {
 	}
 
 	/**
+	 * Link paths inside the test instance, e.g. from a fixture fileadmin subfolder to the
+	 * test instance fileadmin folder
+	 *
+	 * @param array $pathsToLinkInTestInstance Contains paths as array of source => destination in key => value pairs of folders relative to test instance root
+	 * @throws \TYPO3\CMS\Core\Tests\Exception if a source path could not be found
+	 * @throws \TYPO3\CMS\Core\Tests\Exception on failing creating the symlink
+	 * @return void
+	 * @see \TYPO3\CMS\Core\Tests\FunctionalTestCase::$pathsToLinkInTestInstance
+	 */
+	protected function linkPathsInTestInstance(array $pathsToLinkInTestInstance) {
+		foreach ($pathsToLinkInTestInstance as $sourcePathToLinkInTestInstance => $destinationPathToLinkInTestInstance) {
+			$sourcePath = $this->instancePath . '/' . ltrim($sourcePathToLinkInTestInstance, '/');
+			if (!file_exists($sourcePath)) {
+				throw new Exception(
+					'Path ' . $sourcePath . ' not found',
+					1376745645
+				);
+			}
+			$destinationPath = $this->instancePath . '/' . ltrim($destinationPathToLinkInTestInstance, '/');
+			$success = symlink($sourcePath, $destinationPath);
+			if (!$success) {
+				throw new Exception(
+					'Can not link the path ' . $sourcePath . ' to ' . $destinationPath,
+					1389969623
+				);
+			}
+		}
+	}
+
+	/**
 	 * Create LocalConfiguration.php file in the test instance
 	 *
 	 * @throws Exception
@@ -246,29 +298,54 @@ class FunctionalTestCaseBootstrapUtility {
 	}
 
 	/**
+	 * Compile typo3conf/PackageStates.php containing default packages like core,
+	 * a functional test specific list of additional core extensions, and a list of
+	 * test extensions.
+	 *
 	 * @param array $coreExtensionsToLoad Additional core extensions to load
 	 * @param array $testExtensionPaths Paths to extensions relative to document root
 	 * @throws Exception
 	 * @TODO Figure out what the intention of the upper arguments is
 	 */
 	protected function setUpPackageStates(array $coreExtensionsToLoad, array $testExtensionPaths) {
-		$packageStates = require ORIGINAL_ROOT . 'typo3conf/PackageStates.php';
-		$packageStates['packages']['phpunit']['packagePath'] = '../../' . $packageStates['packages']['phpunit']['packagePath'];
+		$packageStates = array(
+			'packages' => array(),
+			'version' => 4,
+		);
 
-		// Activate core extensions if currently inactive
-		foreach ($coreExtensionsToLoad as $extensionName) {
-			if (!empty($packageStates['packages'][$extensionName]['state']) && $packageStates['packages'][$extensionName]['state'] !== 'active') {
-				$packageStates['packages'][$extensionName]['state'] = 'active';
-			}
+		// Register default list of extensions and set active
+		foreach ($this->defaultActivatedCoreExtensions as $extensionName) {
+			$packageStates['packages'][$extensionName] = array(
+				'state' => 'active',
+				'packagePath' => 'typo3/sysext/' . $extensionName . '/',
+				'classesPath' => 'Classes/',
+			);
 		}
 
-		// Clean and activate test extensions that have been symlinked before
-		foreach ($testExtensionPaths as $extensionPath) {
-			$extensionName = basename($extensionPath);
-			if (!empty($packageStates['packages'][$extensionName])) {
-				unset($packageStates['packages'][$extensionName]);
+		// Register additional core extensions and set active
+		foreach ($coreExtensionsToLoad as $extensionName) {
+			if (isset($packageSates['packages'][$extensionName])) {
+				throw new Exception(
+					$extensionName . ' is already registered as default core extension to load, no need to load it explicitly',
+					1390913893
+				);
 			}
+			$packageStates['packages'][$extensionName] = array(
+				'state' => 'active',
+				'packagePath' => 'typo3/sysext/' . $extensionName . '/',
+				'classesPath' => 'Classes/',
+			);
+		}
 
+		// Activate test extensions that have been symlinked before
+		foreach ($testExtensionPaths as $extensionPath) {
+			if (isset($packageSates['packages'][$extensionName])) {
+				throw new Exception(
+					$extensionName . ' is already registered as extension to load, no need to load it explicitly',
+					1390913894
+				);
+			}
+			$extensionName = basename($extensionPath);
 			$packageStates['packages'][$extensionName] = array(
 				'state' => 'active',
 				'packagePath' => 'typo3conf/ext/' . $extensionName . '/',
@@ -333,8 +410,8 @@ class FunctionalTestCaseBootstrapUtility {
 		}
 
 		// Drop database in case a previous test had a fatal and did not clean up properly
-		$database->admin_query('DROP DATABASE IF EXISTS `' . $this->databaseName . '`');
-		$createDatabaseResult = $database->admin_query('CREATE DATABASE `' . $this->databaseName . '`');
+		$database->adminQuery('DROP DATABASE IF EXISTS `' . $this->databaseName . '`');
+		$createDatabaseResult = $database->adminQuery('CREATE DATABASE `' . $this->databaseName . '`');
 		if (!$createDatabaseResult) {
 			$user = $GLOBALS['TYPO3_CONF_VARS']['DB']['username'];
 			$host = $GLOBALS['TYPO3_CONF_VARS']['DB']['host'];
@@ -357,8 +434,10 @@ class FunctionalTestCaseBootstrapUtility {
 	protected function createDatabaseStructure() {
 		/** @var \TYPO3\CMS\Install\Service\SqlSchemaMigrationService $schemaMigrationService */
 		$schemaMigrationService = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Install\\Service\\SqlSchemaMigrationService');
+		/** @var \TYPO3\CMS\Extbase\Object\ObjectManager $objectManager */
+		$objectManager = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Extbase\\Object\\ObjectManager');
 		/** @var \TYPO3\CMS\Install\Service\SqlExpectedSchemaService $expectedSchemaService */
-		$expectedSchemaService = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Install\\Service\\SqlExpectedSchemaService');
+		$expectedSchemaService = $objectManager->get('TYPO3\\CMS\\Install\\Service\\SqlExpectedSchemaService');
 
 		// Raw concatenated ext_tables.sql and friends string
 		$expectedSchemaString = $expectedSchemaService->getTablesDefinitionString(TRUE);
@@ -380,7 +459,7 @@ class FunctionalTestCaseBootstrapUtility {
 				$insertQuery = rtrim($insertQuery, ';');
 				/** @var \TYPO3\CMS\Core\Database\DatabaseConnection $database */
 				$database = $GLOBALS['TYPO3_DB'];
-				$database->admin_query($insertQuery);
+				$database->adminQuery($insertQuery);
 			}
 		}
 	}
@@ -394,12 +473,15 @@ class FunctionalTestCaseBootstrapUtility {
 	protected function tearDownTestDatabase() {
 		/** @var \TYPO3\CMS\Core\Database\DatabaseConnection $database */
 		$database = $GLOBALS['TYPO3_DB'];
-		$result = $database->admin_query('DROP DATABASE `' . $this->databaseName . '`');
+		$result = $database->adminQuery('DROP DATABASE `' . $this->databaseName . '`');
 		if (!$result) {
 			throw new Exception(
 				'Dropping test database ' . $this->databaseName . ' failed',
 				1376583188
 			);
+		}
+		if (ExtensionManagementUtility::isLoaded('doctrine_dbal')) {
+			$database->getDatabaseHandle()->close();
 		}
 	}
 

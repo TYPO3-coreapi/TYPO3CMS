@@ -196,7 +196,7 @@ class QueryView {
 				$qCount = $GLOBALS['TYPO3_DB']->SELECTquery('count(*)', $qGen->table, $qString . BackendUtility::deleteClause($qGen->table));
 				$qSelect = $qGen->getSelectQuery($qString);
 				$res = @$GLOBALS['TYPO3_DB']->sql_query($qCount);
-				if (!$GLOBALS['TYPO3_DB']->sql_error()) {
+				if (!$GLOBALS['TYPO3_DB']->sqlErrorMessage()) {
 					$GLOBALS['TYPO3_DB']->sql_free_result($res);
 					$dA = array();
 					$dA['t2_data'] = serialize(array(
@@ -205,7 +205,7 @@ class QueryView {
 						'qSelect' => $qSelect,
 						'qString' => $qString
 					));
-					$GLOBALS['TYPO3_DB']->exec_UPDATEquery('sys_action', 'uid=' . intval($uid), $dA);
+					$GLOBALS['TYPO3_DB']->exec_UPDATEquery('sys_action', 'uid=' . (int)$uid, $dA);
 					$qOK = 1;
 				}
 			}
@@ -242,7 +242,7 @@ class QueryView {
 		$storeArray = $this->initStoreArray();
 		$storeQueryConfigs = unserialize($GLOBALS['SOBE']->MOD_SETTINGS['storeQueryConfigs']);
 		$storeControl = GeneralUtility::_GP('storeControl');
-		$storeIndex = intval($storeControl['STORE']);
+		$storeIndex = (int)$storeControl['STORE'];
 		$saveStoreArray = 0;
 		$writeArray = array();
 		if (is_array($storeControl)) {
@@ -357,8 +357,8 @@ class QueryView {
 					$output .= $GLOBALS['SOBE']->doc->section('SQL query', $this->tableWrap(htmlspecialchars($qExplain)), 0, 1);
 				}
 				$res = @$GLOBALS['TYPO3_DB']->sql_query($qExplain);
-				if ($GLOBALS['TYPO3_DB']->sql_error()) {
-					$out = '<BR><strong>Error:</strong><BR><font color="red"><strong>' . $GLOBALS['TYPO3_DB']->sql_error() . '</strong></font>';
+				if ($GLOBALS['TYPO3_DB']->sqlErrorMessage()) {
+					$out = '<BR><strong>Error:</strong><BR><font color="red"><strong>' . $GLOBALS['TYPO3_DB']->sqlErrorMessage() . '</strong></font>';
 					$output .= $GLOBALS['SOBE']->doc->section('SQL error', $out, 0, 1);
 				} else {
 					$cPR = $this->getQueryResultCode($mQ, $res, $qGen->table);
@@ -721,9 +721,9 @@ class QueryView {
 	 * @todo Define visibility
 	 */
 	public function getTreeList($id, $depth, $begin = 0, $perms_clause) {
-		$depth = intval($depth);
-		$begin = intval($begin);
-		$id = intval($id);
+		$depth = (int)$depth;
+		$begin = (int)$begin;
+		$id = (int)$id;
 		if ($begin == 0) {
 			$theList = $id;
 		} else {

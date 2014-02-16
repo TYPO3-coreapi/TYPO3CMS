@@ -54,11 +54,6 @@ class ConditionMatcherTest extends \TYPO3\CMS\Core\Tests\UnitTestCase {
 		$this->matchCondition = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance('TYPO3\\CMS\\Frontend\\Configuration\\TypoScript\\ConditionMatching\\ConditionMatcher');
 	}
 
-	public function tearDown() {
-		unset($this->matchCondition);
-		unset($GLOBALS[$this->testGlobalNamespace]);
-	}
-
 	/**
 	 * Tests whether a faulty expression fails.
 	 *
@@ -464,6 +459,19 @@ class ConditionMatcherTest extends \TYPO3\CMS\Core\Tests\UnitTestCase {
 	public function globalStringConditionMatchesOnEqualExpression() {
 		$this->assertTrue($this->matchCondition->match('[globalString = LIT:TYPO3.Test.Condition = TYPO3.Test.Condition]'));
 		$this->assertFalse($this->matchCondition->match('[globalString = LIT:TYPO3.Test.Condition = TYPO3]'));
+	}
+
+	/**
+	 * Tests whether string comparison matches.
+	 *
+	 * @test
+	 */
+	public function globalStringConditionMatchesOnEmptyExpressionWithValueSetToEmptyString() {
+		$testKey = uniqid('test');
+		$_GET = array();
+		$_POST = array($testKey => '');
+		$this->assertTrue($this->matchCondition->match('[globalString = GP:' . $testKey . '=]'));
+		$this->assertTrue($this->matchCondition->match('[globalString = GP:' . $testKey . ' = ]'));
 	}
 
 	/**

@@ -68,6 +68,11 @@ abstract class AbstractBackend implements \TYPO3\CMS\Core\Cache\Backend\BackendI
 	protected $defaultLifetime = 3600;
 
 	/**
+	 * @var \TYPO3\DoctrineDbal\Database\DatabaseConnection
+	 */
+	protected $db;
+
+	/**
 	 * Constructs this backend
 	 *
 	 * @param string $context FLOW3's application context
@@ -77,6 +82,8 @@ abstract class AbstractBackend implements \TYPO3\CMS\Core\Cache\Backend\BackendI
 	 */
 	public function __construct($context, array $options = array()) {
 		$this->context = $context;
+		$this->db = $GLOBALS['TYPO3_DB'];
+
 		if (is_array($options) || $options instanceof \ArrayAccess) {
 			foreach ($options as $optionKey => $optionValue) {
 				$methodName = 'set' . ucfirst($optionKey);

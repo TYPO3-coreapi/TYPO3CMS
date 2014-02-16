@@ -38,12 +38,12 @@ class ContainerTest extends \TYPO3\CMS\Extbase\Tests\Unit\BaseTestCase {
 	/**
 	 * @var \TYPO3\CMS\Extbase\Object\Container\Container
 	 */
-	private $container;
+	protected $container;
 
 	/**
 	 * @var \TYPO3\CMS\Extbase\Object\Container\ClassInfo
 	 */
-	private $cachedClassInfo;
+	protected $cachedClassInfo;
 
 	public function setUp() {
 		//our mocked cache will allways indicate that he has nothing in the cache to force that we get the real classinfo
@@ -660,26 +660,6 @@ class ContainerTest extends \TYPO3\CMS\Extbase\Tests\Unit\BaseTestCase {
 	 *
 	 * @test
 	 */
-	public function getInstanceOnFirstOptionalAndSecondMandatoryInjectsOnlySecondArgumentAndFirstArgumentIsNullIfNoArgumentsGiven() {
-		$object = $this->container->getInstance(
-			'TYPO3\\CMS\\Extbase\\Tests\\Unit\\Object\\Container\\Fixtures\\TwoConstructorArgumentsFirstOptional'
-		);
-		$this->assertInstanceOf(
-			'TYPO3\\CMS\\Extbase\\Tests\\Unit\\Object\\Container\\Fixtures\\TwoConstructorArgumentsFirstOptional',
-			$object
-		);
-		$this->assertNull($object->argumentTestClass);
-		$this->assertInstanceOf(
-			'TYPO3\\CMS\\Extbase\\Tests\\Unit\\Object\\Container\\Fixtures\\ArgumentTestClass',
-			$object->argumentTestClassTwo
-		);
-	}
-
-	/**
-	 * test class TwoConstructorArgumentsFirstOptional
-	 *
-	 * @test
-	 */
 	public function getInstanceOnFirstOptionalAndSecondMandatoryInjectsSecondArgumentIfFirstIsGivenAsNull() {
 		$object = $this->container->getInstance(
 			'TYPO3\\CMS\\Extbase\\Tests\\Unit\\Object\\Container\\Fixtures\\TwoConstructorArgumentsFirstOptional',
@@ -689,7 +669,6 @@ class ContainerTest extends \TYPO3\CMS\Extbase\Tests\Unit\BaseTestCase {
 			'TYPO3\\CMS\\Extbase\\Tests\\Unit\\Object\\Container\\Fixtures\\TwoConstructorArgumentsFirstOptional',
 			$object
 		);
-		$this->assertNull($object->argumentTestClass);
 		$this->assertInstanceOf(
 			'TYPO3\\CMS\\Extbase\\Tests\\Unit\\Object\\Container\\Fixtures\\ArgumentTestClass',
 			$object->argumentTestClassTwo
@@ -764,7 +743,6 @@ class ContainerTest extends \TYPO3\CMS\Extbase\Tests\Unit\BaseTestCase {
 			'TYPO3\\CMS\\Extbase\\Tests\\Unit\\Object\\Container\\Fixtures\\TwoConstructorArgumentsFirstOptional',
 			$object
 		);
-		$this->assertNull($object->argumentTestClass);
 		$this->assertSame(
 			$second,
 			$object->argumentTestClassTwo
@@ -785,7 +763,6 @@ class ContainerTest extends \TYPO3\CMS\Extbase\Tests\Unit\BaseTestCase {
 			'TYPO3\\CMS\\Extbase\\Tests\\Unit\\Object\\Container\\Fixtures\\TwoConstructorArgumentsFirstOptional',
 			$object
 		);
-		$this->assertNull($object->argumentTestClass);
 		$this->assertInstanceOf(
 			'TYPO3\\CMS\\Extbase\\Tests\\Unit\\Object\\Container\\Fixtures\\ArgumentTestClass',
 			$object->argumentTestClassTwo
