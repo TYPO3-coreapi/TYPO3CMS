@@ -185,13 +185,21 @@ class FileHandlingUtility implements \TYPO3\CMS\Core\SingletonInterface {
 	 * Creates directories configured in ext_emconf.php if not already present
 	 *
 	 * @param array $extension
+	 *
+	 * @return array The status messages
 	 */
 	public function ensureConfiguredDirectoriesExist(array $extension) {
+		$result = array();
 		foreach ($this->getAbsolutePathsToConfiguredDirectories($extension) as $directory) {
 			if (!$this->directoryExists($directory)) {
 				$this->createNestedDirectory($directory);
+				$result[] = sprintf('Directory "%s" created.', $directory);
+			} else {
+				$result[] = sprintf('Did not created directory "%s". Already exists.', $directory);
 			}
 		}
+
+		return $result;
 	}
 
 	/**
