@@ -218,7 +218,7 @@ class FileHandlingUtility implements \TYPO3\CMS\Core\SingletonInterface {
 	 * @param array $extension
 	 * @return array
 	 */
-	protected function getAbsolutePathsToConfiguredDirectories(array $extension) {
+	public function getAbsolutePathsToConfiguredDirectories(array $extension) {
 		$requestedDirectories = array();
 		$requestUploadFolder = isset($extension['uploadfolder']) ? (boolean)$extension['uploadfolder'] : FALSE;
 		if ($requestUploadFolder) {
