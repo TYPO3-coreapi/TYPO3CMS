@@ -54,6 +54,10 @@ class UploadExtensionFileController extends AbstractController {
 	 */
 	protected $removeFromOriginalPath = FALSE;
 
+	public function __destruct() {
+		$this->removeBackupFolder();
+	}
+
 	/**
 	 * Render upload extension form
 	 *
@@ -71,47 +75,61 @@ class UploadExtensionFileController extends AbstractController {
 	 */
 	public function extractAction($overwrite = FALSE) {
 		$file = $_FILES['tx_extensionmanager_tools_extensionmanagerextensionmanager'];
-		$fileExtension = pathinfo($file['name']['extensionFile'], PATHINFO_EXTENSION);
 		$fileName = pathinfo($file['name']['extensionFile'], PATHINFO_BASENAME);
 		try {
-			if (empty($file['name']['extensionFile'])) {
-				throw new ExtensionManagerException('No file given.', 1342858852);
-			}
-			if ($fileExtension !== 't3x' && $fileExtension !== 'zip') {
-				throw new ExtensionManagerException('Wrong file format given.', 1342858853);
-			}
-			if (!empty($file['tmp_name']['extensionFile'])) {
-				$tempFile = GeneralUtility::upload_to_tempfile($file['tmp_name']['extensionFile']);
-			} else {
-				throw new ExtensionManagerException(
-					'Creating temporary file failed. Check your upload_max_filesize and post_max_size limits.',
-					1342864339
+			if ($this->checkFileName($fileName)) {
+				if (!empty($file['tmp_name']['extensionFile'])) {
+					$tempFile = GeneralUtility::upload_to_tempfile($file['tmp_name']['extensionFile']);
+				} else {
+					throw new ExtensionManagerException(
+						'Creating temporary file failed. Check your upload_max_filesize and post_max_size limits.',
+						1342864339
+					);
+				}
+				$extensionData = $this->extractExtensionFromFile($tempFile, $fileName, $overwrite);
+				$this->installUtility->install($extensionData['extKey']);
+				$this->addFlashMessage(
+					htmlspecialchars($this->translate('extensionList.uploadFlashMessage.message', array($extensionData['extKey']))),
+					htmlspecialchars($this->translate('extensionList.uploadFlashMessage.title')),
+					FlashMessage::OK
+				);
+				$this->addFlashMessage(
+					htmlspecialchars($this->translate('extensionList.installedFlashMessage.message', array($extensionData['extKey']))),
+					'',
+					FlashMessage::OK
 				);
 			}
-
-			// Import extension
-			if ($fileExtension === 't3x') {
-				$extensionData = $this->getExtensionFromT3xFile($tempFile, $overwrite);
-			} else {
-				$extensionData = $this->getExtensionFromZipFile($tempFile, $fileName, $overwrite);
-			}
-			$this->installUtility->install($extensionData['extKey']);
-			$this->removeBackupFolder();
-			$this->addFlashMessage(
-				htmlspecialchars($this->translate('extensionList.uploadFlashMessage.message', array($extensionData['extKey']))),
-				htmlspecialchars($this->translate('extensionList.uploadFlashMessage.title')),
-				FlashMessage::OK
-			);
-			$this->addFlashMessage(
-				htmlspecialchars($this->translate('extensionList.installedFlashMessage.message', array($extensionData['extKey']))),
-				'',
-				FlashMessage::OK
-			);
 		} catch (\Exception $exception) {
 			$this->removeExtensionAndRestoreFromBackup($fileName);
 			$this->addFlashMessage(htmlspecialchars($exception->getMessage()), '', FlashMessage::ERROR);
 		}
 		$this->redirect('index', 'List', NULL, array(self::TRIGGER_RefreshModuleMenu => TRUE));
+	}
+
+	public function checkFileName($fileName) {
+		$extension = pathinfo($fileName, PATHINFO_EXTENSION);
+		if (empty($fileName)) {
+			throw new ExtensionManagerException('No file given.', 1342858852);
+		}
+		if ($extension !== 't3x' && $extension !== 'zip') {
+			throw new ExtensionManagerException('Wrong file format given.', 1342858853);
+		}
+		return TRUE;
+	}
+
+	public function extractExtensionFromFile($uploadPath, $fileName, $overwrite, $installAfterExtract = TRUE) {
+		$fileExtension = pathinfo($fileName, PATHINFO_EXTENSION);
+		if ($fileExtension === 't3x') {
+			$extensionData = $this->getExtensionFromT3xFile($uploadPath, $overwrite);
+		} else {
+			$extensionData = $this->getExtensionFromZipFile($uploadPath, $fileName, $overwrite);
+		}
+
+		if ($installAfterExtract === TRUE) {
+			$this->installUtility->install($extensionData['extKey']);
+		}
+
+		return $extensionData;
 	}
 
 	/**
@@ -213,7 +231,6 @@ class UploadExtensionFileController extends AbstractController {
 		if (!empty($this->extensionBackupPath)) {
 			GeneralUtility::mkdir($extDirPath);
 			GeneralUtility::copyDirectory($this->extensionBackupPath, $extDirPath);
-			$this->removeBackupFolder();
 		}
 	}
 
