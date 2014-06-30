@@ -122,7 +122,7 @@ class UploadExtensionFileController extends AbstractController {
 	 * @throws ExtensionManagerException
 	 * @return array
 	 */
-	protected function getExtensionFromT3xFile($file, $overwrite = FALSE) {
+	public function getExtensionFromT3xFile($file, $overwrite = FALSE) {
 		$fileContent = GeneralUtility::getUrl($file);
 		if (!$fileContent) {
 			throw new ExtensionManagerException('File had no or wrong content.', 1342859339);
